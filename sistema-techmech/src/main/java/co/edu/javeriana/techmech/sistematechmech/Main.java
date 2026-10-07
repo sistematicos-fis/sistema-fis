@@ -7,7 +7,7 @@ public class Main extends Application {
 
     @Override
     public void start(Stage stage) {
-        stage.setTitle("TechMech");
+        stage.setTitle("Welcome to TechMech!");
         stage.show();
     }
 
