@@ -5,8 +5,6 @@ import co.edu.javeriana.concesionario.clientes.vista.ClienteVista;
 import co.edu.javeriana.concesionario.financiacion.vista.FinanciacionVista;
 import co.edu.javeriana.concesionario.inventario.vista.InventarioVista;
 import co.edu.javeriana.concesionario.legal.vista.LegalVista;
-import co.edu.javeriana.concesionario.mantenimiento.vista.MantenimientoVista;
-import co.edu.javeriana.concesionario.rrhh.vista.RRHHVista;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -24,7 +22,7 @@ import javax.swing.JTabbedPane;
 /**
  * Ventana Principal del Sistema Concesionario Integrado.
  * Implementada con Java Swing (Cumple restricción GUI: exclusivamente Swing o JavaFX).
- * Conecta los 7 módulos funcionales del equipo.
+ * Conecta los 5 módulos funcionales del equipo.
  */
 public class VentanaPrincipal extends JFrame {
 
@@ -45,13 +43,11 @@ public class VentanaPrincipal extends JFrame {
         tabbedPane = new JTabbedPane();
         tabbedPane.setFont(new Font("SansSerif", Font.BOLD, 13));
 
-        // Inicializar vistas de las 7 áreas
+        // Inicializar vistas de las 5 áreas activas
         tabbedPane.addTab("Clientes y PQRS", new ClienteVista());
         tabbedPane.addTab("Inventario y Bodega", new InventarioVista());
         tabbedPane.addTab("Financiación (CU-11 a CU-15)", new FinanciacionVista());
         tabbedPane.addTab("Alquiler", new AlquilerVista());
-        tabbedPane.addTab("Mantenimiento y Flota", new MantenimientoVista());
-        tabbedPane.addTab("Recursos Humanos", new RRHHVista());
         tabbedPane.addTab("Documentación Legal", new LegalVista());
 
         // Por defecto, enfocar Financiación (responsabilidad de Jerónimo)
@@ -88,8 +84,6 @@ public class VentanaPrincipal extends JFrame {
             "Inventario y Bodega (Juan Pablo León)",
             "Financiación (Jerónimo Martin)",
             "Alquiler (Samuel Borras)",
-            "Mantenimiento y Flota (Jaime Andrés Molina)",
-            "Recursos Humanos (Sergio Alejandro Ramírez)",
             "Documentación Legal (Samuel Montaña)"
         };
         for (int i = 0; i < modulos.length; i++) {
@@ -108,7 +102,7 @@ public class VentanaPrincipal extends JFrame {
                 "Pontificia Universidad Javeriana - Fundamentos de Ingeniería de Software\n" +
                 "Arquitectura Modular en Capas - Java Swing & H2 Relacional Embebido\n\n" +
                 "Integrantes: Andrés Alquerque, Juan Pablo León, Jerónimo Martin,\n" +
-                "Samuel Borras, Jaime Molina, Sergio Ramírez, Samuel Montaña.",
+                "Samuel Borras, Samuel Montaña.",
                 "Acerca de Concesionario Javeriana",
                 javax.swing.JOptionPane.INFORMATION_MESSAGE);
         });

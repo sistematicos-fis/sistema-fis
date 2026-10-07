@@ -28,8 +28,6 @@ concesionario/
 │   ├── 02_inventario.sql   # Catálogo de vehículos, motocicletas y bodegas
 │   ├── 03_financiacion.sql # Bancos aliados, tipos de crédito, solicitudes y amortización
 │   ├── 04_alquiler.sql     # Puntos de entrega, sedes, tarifas y contratos de renta
-│   ├── 05_mantenimiento.sql# Talleres, órdenes de servicio, repuestos y mecánicos
-│   ├── 06_rrhh.sql         # Empleados, turnos, comisiones comerciales y desempeño
 │   └── 07_legal.sql        # Trámites de traspaso, RUNT y pólizas de seguro
 ├── test/                   # Pruebas automatizadas JUnit 5 (espejo exacto del árbol src/)
 │   └── co/edu/javeriana/concesionario/
@@ -38,8 +36,6 @@ concesionario/
 │       ├── inventario/     # Pruebas de stock y depreciación
 │       ├── financiacion/   # Pruebas de cálculo de amortización y evaluación bancaria
 │       ├── alquiler/       # Pruebas de gestión de sedes y puntos de entrega
-│       ├── mantenimiento/  # Pruebas de liquidación de órdenes de taller
-│       ├── rrhh/           # Pruebas de liquidación escalonada de comisiones
 │       └── legal/          # Pruebas de emisión con simulador de aseguradora
 └── src/co/edu/javeriana/concesionario/
     ├── Main.java           # Punto de entrada que arranca la aplicación de escritorio Swing
@@ -56,16 +52,14 @@ concesionario/
     ├── inventario/         # CU-06 a CU-10 · Inventario y Bodega ...... Juan Pablo León
     ├── financiacion/       # CU-11 a CU-15 · Financiación ............ Jerónimo Martin
     ├── alquiler/           # CU-16 a CU-20 · Alquiler ................ Samuel Borras
-    ├── mantenimiento/      # CU-21 a CU-25 · Mantenimiento y Flota .... Jaime Andrés Molina
-    ├── rrhh/               # CU-26 a CU-30 · Recursos Humanos ........ Sergio Alejandro Ramírez
-    └── legal/              # CU-31 a CU-35 · Documentación Legal ...... Samuel Montaña
+    └── legal/              # CU-21 a CU-25 · Documentación Legal ...... Samuel Montaña
 ```
 
 ---
 
-## 2. Asignación de Integrantes y Casos de Uso (CU-01 a CU-35)
+## 2. Asignación de Integrantes y Casos de Uso (25 Casos de Uso - 5 Integrantes)
 
-Cada integrante del equipo es dueño de **5 casos de uso**, incluyendo al menos **1 caso de uso no trivial (no CRUD)**:
+Cada integrante del equipo es dueño de **5 casos de uso**, incluyendo al menos **1 caso de uso no trivial (no CRUD)**, cumpliendo con la regla de grupos de 5 a 7 integrantes:
 
 | Integrante | Área Funcional | Casos de Uso Asignados | Caso No Trivial (No CRUD) |
 |---|---|---|---|
@@ -73,9 +67,7 @@ Cada integrante del equipo es dueño de **5 casos de uso**, incluyendo al menos 
 | **Juan Pablo León** | Inventario y Bodega | **CU-06 a CU-10** | **CU-10**: Valoración de Inventario y Depreciación Anual Comercial |
 | **Jerónimo Martin** | Financiación | **CU-11 a CU-15** | **CU-13**: Simulación Francés y Plan de Amortización con Ajuste de Centavos |
 | **Samuel Borras** | Alquiler | **CU-16 a CU-20** | **CU-19**: Liquidación de Alquiler con Penalidades por Retraso/Combustible |
-| **Jaime Andrés Molina** | Mantenimiento y Flota | **CU-21 a CU-25** | **CU-24**: Liquidación Multidimensional de Mano de Obra, Insumos e IVA |
-| **Sergio A. Ramírez** | Recursos Humanos | **CU-26 a CU-30** | **CU-28**: Liquidación Escalonada de Comisiones Comerciales por Ventas |
-| **Samuel Montaña** | Documentación Legal | **CU-31 a CU-35** | **CU-34**: Cotización y Emisión con Simulador Interno de Aseguradora |
+| **Samuel Montaña** | Documentación Legal | **CU-21 a CU-25** | **CU-24 / CU-34**: Cotización y Emisión con Simulador Interno de Aseguradora |
 
 ---
 

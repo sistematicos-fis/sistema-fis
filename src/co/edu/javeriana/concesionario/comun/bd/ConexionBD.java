@@ -74,8 +74,6 @@ public final class ConexionBD {
             "db/02_inventario.sql",
             "db/03_financiacion.sql",
             "db/04_alquiler.sql",
-            "db/05_mantenimiento.sql",
-            "db/06_rrhh.sql",
             "db/07_legal.sql"
         };
 
