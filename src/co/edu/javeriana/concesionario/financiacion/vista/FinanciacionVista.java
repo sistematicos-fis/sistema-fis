@@ -24,14 +24,7 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
 
-/**
- * Vista Swing del Módulo de Financiación.
- * CU-11: Gestionar entidades financieras aliadas (crear, consultar, editar y eliminar).
- *
- * Responsable: Jerónimo Martin
- */
 public class FinanciacionVista extends JPanel {
-
     private final FinanciacionServicio servicio;
 
     private final JTextField txtCodigo;
@@ -43,7 +36,6 @@ public class FinanciacionVista extends JPanel {
     private final JTable tblEntidades;
     private final DefaultTableModel modeloTabla;
 
-    /** Id de la entidad seleccionada en la tabla. Si es null, "Guardar" crea una entidad nueva. */
     private Long idSeleccionado;
 
     public FinanciacionVista() {
@@ -52,7 +44,6 @@ public class FinanciacionVista extends JPanel {
         setLayout(new BorderLayout(10, 10));
         setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
 
-        // Formulario superior
         JPanel pnlForm = new JPanel(new GridLayout(3, 4, 10, 10));
         pnlForm.setBorder(BorderFactory.createTitledBorder("Entidad Financiera Aliada (CU-11)"));
 
@@ -80,7 +71,6 @@ public class FinanciacionVista extends JPanel {
         chkActivo = new JCheckBox("Activa", true);
         pnlForm.add(chkActivo);
 
-        // Botones
         JPanel pnlBotones = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
         JButton btnNuevo = new JButton("Nuevo");
         btnNuevo.addActionListener(e -> limpiarFormulario());
@@ -100,7 +90,6 @@ public class FinanciacionVista extends JPanel {
         pnlNorte.add(pnlBotones, BorderLayout.SOUTH);
         add(pnlNorte, BorderLayout.NORTH);
 
-        // Tabla de entidades registradas
         String[] columnas = {"ID", "Código", "Nombre", "NIT", "Tasa E.A.", "Scoring Mín.", "Estado"};
         modeloTabla = new DefaultTableModel(columnas, 0) {
             @Override
@@ -218,7 +207,6 @@ public class FinanciacionVista extends JPanel {
         entidad.setCodigo(txtCodigo.getText());
         entidad.setNombre(txtNombre.getText());
         entidad.setNit(txtNit.getText());
-        // La tasa se escribe en porcentaje (16.5) y se guarda como fracción (0.165)
         BigDecimal tasaPorcentaje = new BigDecimal(txtTasaEa.getText().trim());
         entidad.setTasaBaseEa(tasaPorcentaje.divide(new BigDecimal("100"), 4, RoundingMode.HALF_UP));
         entidad.setScoringMinimo(Integer.parseInt(txtScoring.getText().trim()));

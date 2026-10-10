@@ -12,13 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * DAO para gestión y persistencia de Entidades Financieras en H2 vía JDBC (CU-11).
- * Implementa las cuatro operaciones CRUD: crear, consultar, actualizar y eliminar.
- */
 public class EntidadFinancieraDAO {
-
-    // --- CREAR ---
     public EntidadFinanciera guardar(EntidadFinanciera entidad) throws SQLException {
         String sql = "INSERT INTO entidades_financieras (codigo, nombre, nit, tasa_base_ea, scoring_minimo, activo) " +
                      "VALUES (?, ?, ?, ?, ?, ?)";
@@ -41,7 +35,6 @@ public class EntidadFinancieraDAO {
         return entidad;
     }
 
-    // --- ACTUALIZAR ---
     public void actualizar(EntidadFinanciera entidad) throws SQLException {
         String sql = "UPDATE entidades_financieras SET codigo = ?, nombre = ?, nit = ?, tasa_base_ea = ?, " +
                      "scoring_minimo = ?, activo = ? WHERE id = ?";
@@ -58,7 +51,6 @@ public class EntidadFinancieraDAO {
         }
     }
 
-    // --- ELIMINAR ---
     public void eliminar(Long id) throws SQLException {
         String sql = "DELETE FROM entidades_financieras WHERE id = ?";
         try (Connection conn = ConexionBD.obtenerConexion();
@@ -68,7 +60,6 @@ public class EntidadFinancieraDAO {
         }
     }
 
-    // --- CONSULTAR ---
     public List<EntidadFinanciera> listarTodas() throws SQLException {
         return listar("SELECT * FROM entidades_financieras ORDER BY nombre");
     }

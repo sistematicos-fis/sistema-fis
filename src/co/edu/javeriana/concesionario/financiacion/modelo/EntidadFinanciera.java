@@ -3,9 +3,6 @@ package co.edu.javeriana.concesionario.financiacion.modelo;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-/**
- * Entidad que representa un banco o financiera aliada (CU-11).
- */
 public class EntidadFinanciera {
     private Long id;
     private String codigo;

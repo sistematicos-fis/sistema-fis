@@ -13,11 +13,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Pruebas del CU-11: Gestionar entidades financieras aliadas (CRUD).
- */
 public class FinanciacionServicioTest {
-
     private static FinanciacionServicio servicio;
 
     @BeforeAll
