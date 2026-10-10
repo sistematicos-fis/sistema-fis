@@ -66,7 +66,7 @@ Cada integrante del equipo es dueño de **5 casos de uso**, incluyendo al menos 
 | **Juan Pablo León** | Inventario y Bodega | **CU-06 a CU-10** | **CU-10**: Valoración de Inventario y Depreciación Anual Comercial |
 | **Jerónimo Martin** | Financiación | **CU-11 a CU-15** | **CU-15**: Simular, Evaluar y Formalizar Crédito (Amortización) |
 | **Samuel Borras** | Alquiler | **CU-16 a CU-20** | **CU-19**: Liquidación de Alquiler con Penalidades por Retraso/Combustible |
-| **Samuel Montaña** | Documentación Legal | **CU-21 a CU-25** | **CU-24 / CU-34**: Cotización y Emisión con Simulador Interno de Aseguradora |
+| **Samuel Montaña** | Documentación Legal | **CU-21 a CU-25** | **CU-24 / CU-25**: Cotización y Emisión con Simulador Interno de Aseguradora |
 
 ---
 
