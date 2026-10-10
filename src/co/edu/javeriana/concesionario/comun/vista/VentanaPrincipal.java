@@ -46,7 +46,7 @@ public class VentanaPrincipal extends JFrame {
         // Inicializar vistas de las 5 áreas activas
         tabbedPane.addTab("Clientes y PQRS", new ClienteVista());
         tabbedPane.addTab("Inventario y Bodega", new InventarioVista());
-        tabbedPane.addTab("Financiación (CU-11 a CU-15)", new FinanciacionVista());
+        tabbedPane.addTab("Financiación", new FinanciacionVista());
         tabbedPane.addTab("Alquiler", new AlquilerVista());
         tabbedPane.addTab("Documentación Legal", new LegalVista());
 
