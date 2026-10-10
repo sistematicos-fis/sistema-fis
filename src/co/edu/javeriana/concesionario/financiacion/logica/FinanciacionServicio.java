@@ -1,217 +1,139 @@
 package co.edu.javeriana.concesionario.financiacion.logica;
 
-import co.edu.javeriana.concesionario.comun.simuladores.SimuladorEntidadFinanciera;
-import co.edu.javeriana.concesionario.financiacion.modelo.*;
-import co.edu.javeriana.concesionario.financiacion.persistencia.*;
+import co.edu.javeriana.concesionario.financiacion.modelo.EntidadFinanciera;
+import co.edu.javeriana.concesionario.financiacion.persistencia.EntidadFinancieraDAO;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.sql.SQLException;
-import java.time.LocalDate;
 import java.util.List;
-import java.util.UUID;
+import java.util.Optional;
+import java.util.regex.Pattern;
 
 /**
- * Servicio principal que implementa la orquestación de la lógica de negocio de Financiación.
- * Controla CU-11, CU-12, CU-13, CU-14 y CU-15.
- * 
+ * Servicio de lógica de negocio del Módulo de Financiación.
+ * CU-11: Gestionar entidades financieras aliadas (CRUD).
+ *
  * Responsable: Jerónimo Martin
  */
 public class FinanciacionServicio {
 
+    /** NIT colombiano: dígitos (con o sin puntos) seguidos de guion y dígito de verificación. Ej: 890.903.938-8 */
+    private static final Pattern PATRON_NIT = Pattern.compile("^[0-9.]{6,15}-[0-9]$");
+    private static final int LONGITUD_MAX_CODIGO = 20;
+    private static final int LONGITUD_MAX_NOMBRE = 100;
+    private static final int SCORING_MINIMO_PERMITIDO = 300;
+    private static final int SCORING_MAXIMO_PERMITIDO = 900;
+
+    /** Código de error de H2 cuando se intenta borrar un registro que otra tabla referencia (llave foránea). */
+    private static final int H2_ERROR_REGISTRO_CON_DEPENDENCIAS = 23503;
+
     private final EntidadFinancieraDAO entidadDAO;
-    private final TipoCreditoDAO tipoCreditoDAO;
-    private final SolicitudCreditoDAO solicitudDAO;
-    private final CreditoFormalizadoDAO formalizadoDAO;
-    private final PagoCreditoDAO pagoDAO;
 
     public FinanciacionServicio() {
-        this.entidadDAO = new EntidadFinancieraDAO();
-        this.tipoCreditoDAO = new TipoCreditoDAO();
-        this.solicitudDAO = new SolicitudCreditoDAO();
-        this.formalizadoDAO = new CreditoFormalizadoDAO();
-        this.pagoDAO = new PagoCreditoDAO();
+        this(new EntidadFinancieraDAO());
     }
 
-    public FinanciacionServicio(EntidadFinancieraDAO entidadDAO, TipoCreditoDAO tipoCreditoDAO,
-                                SolicitudCreditoDAO solicitudDAO, CreditoFormalizadoDAO formalizadoDAO,
-                                PagoCreditoDAO pagoDAO) {
+    public FinanciacionServicio(EntidadFinancieraDAO entidadDAO) {
         this.entidadDAO = entidadDAO;
-        this.tipoCreditoDAO = tipoCreditoDAO;
-        this.solicitudDAO = solicitudDAO;
-        this.formalizadoDAO = formalizadoDAO;
-        this.pagoDAO = pagoDAO;
     }
 
-    // --- CU-11: Entidades Financieras ---
+    // --- CU-11: Consultar ---
+    public List<EntidadFinanciera> listarEntidades() throws SQLException {
+        return entidadDAO.listarTodas();
+    }
+
     public List<EntidadFinanciera> listarEntidadesActivas() throws SQLException {
         return entidadDAO.listarActivas();
     }
 
+    public Optional<EntidadFinanciera> buscarEntidad(Long id) throws SQLException {
+        return entidadDAO.buscarPorId(id);
+    }
+
+    // --- CU-11: Crear ---
     public EntidadFinanciera registrarEntidad(EntidadFinanciera entidad) throws SQLException {
-        if (entidad.getCodigo() == null || entidad.getCodigo().trim().isEmpty()) {
-            throw new ReglaNegocioException("El código de la entidad financiera es obligatorio.");
-        }
-        if (entidad.getNombre() == null || entidad.getNombre().trim().isEmpty()) {
-            throw new ReglaNegocioException("El nombre de la entidad financiera es obligatorio.");
-        }
+        validarDatos(entidad);
+        validarCodigoYNitUnicos(entidad);
         return entidadDAO.guardar(entidad);
     }
 
-    // --- CU-12: Tipos de Crédito ---
-    public List<TipoCredito> listarTiposCreditoActivos() throws SQLException {
-        return tipoCreditoDAO.listarActivos();
+    // --- CU-11: Editar ---
+    public void actualizarEntidad(EntidadFinanciera entidad) throws SQLException {
+        if (entidad.getId() == null || entidadDAO.buscarPorId(entidad.getId()).isEmpty()) {
+            throw new ReglaNegocioException("No se pudo actualizar: la entidad financiera seleccionada no existe. Seleccione una entidad de la tabla.");
+        }
+        validarDatos(entidad);
+        validarCodigoYNitUnicos(entidad);
+        entidadDAO.actualizar(entidad);
     }
 
-    public TipoCredito registrarTipoCredito(TipoCredito tipo) throws SQLException {
-        if (tipo.getPlazoMinimoMeses() <= 0 || tipo.getPlazoMaximoMeses() < tipo.getPlazoMinimoMeses()) {
-            throw new ReglaNegocioException("El rango de plazos especificado es inválido.");
+    // --- CU-11: Eliminar ---
+    public void eliminarEntidad(Long id) throws SQLException {
+        if (id == null || entidadDAO.buscarPorId(id).isEmpty()) {
+            throw new ReglaNegocioException("No se pudo eliminar: la entidad financiera seleccionada no existe.");
         }
-        return tipoCreditoDAO.guardar(tipo);
+        try {
+            entidadDAO.eliminar(id);
+        } catch (SQLException e) {
+            // Excepción del CU-11: la entidad tiene relaciones activas con otros módulos
+            if (e.getErrorCode() == H2_ERROR_REGISTRO_CON_DEPENDENCIAS) {
+                throw new ReglaNegocioException("No se pudo eliminar la entidad financiera: tiene registros asociados en otros módulos. "
+                        + "Puede marcarla como inactiva en lugar de eliminarla.");
+            }
+            throw e;
+        }
     }
 
-    // --- CU-13: Simulación (No Trivial) ---
-    public TablaAmortizacion simularCredito(BigDecimal monto, BigDecimal tasaEa, int plazoMeses) {
-        if (monto == null || monto.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new ReglaNegocioException("El monto a financiar debe ser mayor a cero.");
+    /**
+     * Valida campos obligatorios, formatos y reglas de negocio (RNF-04).
+     * Cada mensaje indica qué falló y cómo corregirlo (RNF-06).
+     */
+    private void validarDatos(EntidadFinanciera entidad) {
+        if (estaVacio(entidad.getCodigo())) {
+            throw new ReglaNegocioException("No se pudo guardar la entidad: el campo Código es obligatorio.");
         }
-        if (plazoMeses <= 0) {
-            throw new ReglaNegocioException("El plazo en meses debe ser mayor a cero.");
+        if (entidad.getCodigo().trim().length() > LONGITUD_MAX_CODIGO) {
+            throw new ReglaNegocioException("No se pudo guardar la entidad: el Código no puede superar " + LONGITUD_MAX_CODIGO + " caracteres.");
         }
-        return CalculadoraAmortizacion.generarTablaAmortizacion(monto, tasaEa, plazoMeses, LocalDate.now().plusMonths(1));
+        if (estaVacio(entidad.getNombre())) {
+            throw new ReglaNegocioException("No se pudo guardar la entidad: el campo Nombre es obligatorio.");
+        }
+        if (entidad.getNombre().trim().length() > LONGITUD_MAX_NOMBRE) {
+            throw new ReglaNegocioException("No se pudo guardar la entidad: el Nombre no puede superar " + LONGITUD_MAX_NOMBRE + " caracteres.");
+        }
+        if (estaVacio(entidad.getNit())) {
+            throw new ReglaNegocioException("No se pudo guardar la entidad: el campo NIT es obligatorio.");
+        }
+        if (!PATRON_NIT.matcher(entidad.getNit().trim()).matches()) {
+            throw new ReglaNegocioException("No se pudo guardar la entidad: el NIT tiene un formato inválido. Use el formato 890.903.938-8.");
+        }
+        BigDecimal tasa = entidad.getTasaBaseEa();
+        if (tasa == null || tasa.compareTo(BigDecimal.ZERO) <= 0 || tasa.compareTo(BigDecimal.ONE) >= 0) {
+            throw new ReglaNegocioException("No se pudo guardar la entidad: la Tasa E.A. debe ser mayor a 0% y menor a 100%.");
+        }
+        if (entidad.getScoringMinimo() < SCORING_MINIMO_PERMITIDO || entidad.getScoringMinimo() > SCORING_MAXIMO_PERMITIDO) {
+            throw new ReglaNegocioException("No se pudo guardar la entidad: el Scoring mínimo debe estar entre "
+                    + SCORING_MINIMO_PERMITIDO + " y " + SCORING_MAXIMO_PERMITIDO + ".");
+        }
+
+        entidad.setCodigo(entidad.getCodigo().trim().toUpperCase());
+        entidad.setNombre(entidad.getNombre().trim());
+        entidad.setNit(entidad.getNit().trim());
     }
 
-    // --- CU-14: Radicación y Evaluación de Solicitud de Crédito ---
-    public SolicitudCredito radicarSolicitud(
-            Long clienteId, Long vehiculoId, Long tipoCreditoId,
-            BigDecimal montoSolicitado, int plazoMeses, BigDecimal cuotaInicial,
-            BigDecimal ingresosCertificados, BigDecimal gastosDeclarados,
-            String documentoCliente) throws SQLException {
-
-        if (montoSolicitado == null || montoSolicitado.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new ReglaNegocioException("El monto solicitado debe ser mayor a cero.");
+    /** El código y el NIT no se pueden repetir entre entidades distintas. */
+    private void validarCodigoYNitUnicos(EntidadFinanciera entidad) throws SQLException {
+        Optional<EntidadFinanciera> mismoCodigo = entidadDAO.buscarPorCodigo(entidad.getCodigo());
+        if (mismoCodigo.isPresent() && !mismoCodigo.get().getId().equals(entidad.getId())) {
+            throw new ReglaNegocioException("No se pudo guardar la entidad: ya existe otra entidad con el código " + entidad.getCodigo() + ".");
         }
-        if (ingresosCertificados == null || ingresosCertificados.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new ReglaNegocioException("Los ingresos certificados deben ser mayores a cero.");
+        Optional<EntidadFinanciera> mismoNit = entidadDAO.buscarPorNit(entidad.getNit());
+        if (mismoNit.isPresent() && !mismoNit.get().getId().equals(entidad.getId())) {
+            throw new ReglaNegocioException("No se pudo guardar la entidad: ya existe otra entidad con el NIT " + entidad.getNit() + ".");
         }
-
-        TipoCredito tc = tipoCreditoDAO.buscarPorId(tipoCreditoId)
-                .orElseThrow(() -> new ReglaNegocioException("Tipo de crédito no encontrado."));
-
-        if (plazoMeses < tc.getPlazoMinimoMeses() || plazoMeses > tc.getPlazoMaximoMeses()) {
-            throw new ReglaNegocioException("El plazo solicitado (" + plazoMeses + " meses) está fuera del rango permitido [" 
-                    + tc.getPlazoMinimoMeses() + " - " + tc.getPlazoMaximoMeses() + "].");
-        }
-
-        // Calcular cuota estimada y ratio de endeudamiento
-        BigDecimal tasaMensual = CalculadoraAmortizacion.convertirEaAMensualVencida(tc.getTasaInteresEa());
-        BigDecimal cuotaEstimada = CalculadoraAmortizacion.calcularCuotaFija(montoSolicitado, tasaMensual, plazoMeses);
-        BigDecimal ratioEndeudamiento = cuotaEstimada.divide(ingresosCertificados, 4, RoundingMode.HALF_UP)
-                .multiply(new BigDecimal(100)).setScale(2, RoundingMode.HALF_UP);
-
-        // REGLA DEL 30%: Si la cuota supera el 30% del ingreso, se rechaza directamente
-        boolean excedeCapacidad = ratioEndeudamiento.compareTo(new BigDecimal("30.00")) > 0;
-
-        SolicitudCredito s = new SolicitudCredito();
-        s.setNumeroRadicado("RAD-" + System.currentTimeMillis() % 100000000);
-        s.setClienteId(clienteId);
-        s.setVehiculoId(vehiculoId);
-        s.setTipoCreditoId(tipoCreditoId);
-        s.setMontoSolicitado(montoSolicitado);
-        s.setPlazoMeses(plazoMeses);
-        s.setCuotaInicial(cuotaInicial != null ? cuotaInicial : BigDecimal.ZERO);
-        s.setIngresosCertificados(ingresosCertificados);
-        s.setGastosDeclarados(gastosDeclarados != null ? gastosDeclarados : BigDecimal.ZERO);
-        s.setCuotaEstimada(cuotaEstimada);
-        s.setPorcentajeEndeudamiento(ratioEndeudamiento);
-
-        if (excedeCapacidad) {
-            s.setEstado("RECHAZADA");
-            s.setObservaciones("Rechazada: Capacidad de endeudamiento excedida (" + ratioEndeudamiento + "% > 30.00%).");
-        } else {
-            s.setEstado("EN_EVALUACION");
-            s.setObservaciones("Radicación exitosa. Lista para simulación de scoring bancario.");
-        }
-
-        return solicitudDAO.guardar(s);
     }
 
-    // --- CU-15: Evaluación de Scoring y Formalización Simulada ---
-    public CreditoFormalizado formalizarSolicitudConBanco(Long solicitudId, String documentoCliente) throws SQLException {
-        SolicitudCredito sol = solicitudDAO.buscarPorId(solicitudId)
-                .orElseThrow(() -> new ReglaNegocioException("Solicitud no encontrada con ID: " + solicitudId));
-
-        if ("RECHAZADA".equals(sol.getEstado())) {
-            throw new ReglaNegocioException("No se puede formalizar una solicitud que se encuentra rechazada.");
-        }
-        if ("FORMALIZADA".equals(sol.getEstado())) {
-            throw new ReglaNegocioException("La solicitud ya fue formalizada previamente.");
-        }
-
-        TipoCredito tc = tipoCreditoDAO.buscarPorId(sol.getTipoCreditoId())
-                .orElseThrow(() -> new ReglaNegocioException("Tipo de crédito asociado no encontrado."));
-
-        EntidadFinanciera entidad = entidadDAO.buscarPorId(tc.getEntidadFinancieraId())
-                .orElseThrow(() -> new ReglaNegocioException("Entidad bancaria asociada no encontrada."));
-
-        // Invocar el simulador bancario interno (Restricción de simuladores para servicios externos)
-        SimuladorEntidadFinanciera.RespuestaSimulacionBanco respuestaBanco = SimuladorEntidadFinanciera.evaluarCreditoExterno(
-                documentoCliente,
-                sol.getIngresosCertificados(),
-                sol.getCuotaEstimada(),
-                entidad.getScoringMinimo(),
-                tc.getTasaInteresEa()
-        );
-
-        if (!respuestaBanco.isAprobado()) {
-            solicitudDAO.actualizarEstado(sol.getId(), "RECHAZADA", respuestaBanco.getScoreCalculado(), respuestaBanco.getObservacion());
-            throw new ReglaNegocioException("Entidad bancaria simulada denegó el crédito: " + respuestaBanco.getObservacion());
-        }
-
-        // Si fue aprobada por el simulador, se formaliza atómicamente y se genera la tabla de cuotas
-        TablaAmortizacion tabla = CalculadoraAmortizacion.generarTablaAmortizacion(
-                sol.getMontoSolicitado(),
-                tc.getTasaInteresEa(),
-                sol.getPlazoMeses(),
-                LocalDate.now().plusMonths(1)
-        );
-
-        BigDecimal tasaMensual = CalculadoraAmortizacion.convertirEaAMensualVencida(tc.getTasaInteresEa());
-
-        CreditoFormalizado cf = new CreditoFormalizado();
-        cf.setSolicitudId(sol.getId());
-        cf.setCodigoAprobacionBanco(respuestaBanco.getCodigoAprobacion());
-        cf.setEntidadId(entidad.getId());
-        cf.setMontoAprobado(sol.getMontoSolicitado());
-        cf.setTasaMensualAplicada(tasaMensual);
-        cf.setPlazoMeses(sol.getPlazoMeses());
-        cf.setSaldoCapitalPendiente(sol.getMontoSolicitado());
-        cf.setEstado("ACTIVO");
-
-        return formalizadoDAO.formalizarCreditoConCuotas(cf, tabla);
-    }
-
-    // --- Pagos de Cuotas ---
-    public PagoCredito registrarPagoCuota(Long creditoId, int numeroCuota, BigDecimal monto, String metodo) throws SQLException {
-        if (monto == null || monto.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new ReglaNegocioException("El monto a pagar debe ser positivo.");
-        }
-
-        PagoCredito pago = new PagoCredito();
-        pago.setCreditoFormalizadoId(creditoId);
-        pago.setNumeroCuota(numeroCuota);
-        pago.setMontoPagado(monto);
-        pago.setNumeroRecibo("REC-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
-        pago.setMetodoPago(metodo != null ? metodo : "TRANSFERENCIA_SIMULADA");
-
-        return pagoDAO.registrarPago(pago);
-    }
-
-    public List<SolicitudCredito> listarSolicitudes() throws SQLException {
-        return solicitudDAO.listarTodas();
-    }
-
-    public List<CuotaAmortizacion> consultarCuotasDeCredito(Long creditoId) throws SQLException {
-        return formalizadoDAO.listarCuotasPorCredito(creditoId);
+    private boolean estaVacio(String texto) {
+        return texto == null || texto.trim().isEmpty();
     }
 }
