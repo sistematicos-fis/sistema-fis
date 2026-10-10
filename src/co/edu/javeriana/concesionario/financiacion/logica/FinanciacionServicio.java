@@ -9,22 +9,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
-/**
- * Servicio de lógica de negocio del Módulo de Financiación.
- * CU-11: Gestionar entidades financieras aliadas (CRUD).
- *
- * Responsable: Jerónimo Martin
- */
 public class FinanciacionServicio {
-
-    /** NIT colombiano: dígitos (con o sin puntos) seguidos de guion y dígito de verificación. Ej: 890.903.938-8 */
     private static final Pattern PATRON_NIT = Pattern.compile("^[0-9.]{6,15}-[0-9]$");
     private static final int LONGITUD_MAX_CODIGO = 20;
     private static final int LONGITUD_MAX_NOMBRE = 100;
     private static final int SCORING_MINIMO_PERMITIDO = 300;
     private static final int SCORING_MAXIMO_PERMITIDO = 900;
 
-    /** Código de error de H2 cuando se intenta borrar un registro que otra tabla referencia (llave foránea). */
     private static final int H2_ERROR_REGISTRO_CON_DEPENDENCIAS = 23503;
 
     private final EntidadFinancieraDAO entidadDAO;
@@ -37,7 +28,6 @@ public class FinanciacionServicio {
         this.entidadDAO = entidadDAO;
     }
 
-    // --- CU-11: Consultar ---
     public List<EntidadFinanciera> listarEntidades() throws SQLException {
         return entidadDAO.listarTodas();
     }
@@ -50,14 +40,12 @@ public class FinanciacionServicio {
         return entidadDAO.buscarPorId(id);
     }
 
-    // --- CU-11: Crear ---
     public EntidadFinanciera registrarEntidad(EntidadFinanciera entidad) throws SQLException {
         validarDatos(entidad);
         validarCodigoYNitUnicos(entidad);
         return entidadDAO.guardar(entidad);
     }
 
-    // --- CU-11: Editar ---
     public void actualizarEntidad(EntidadFinanciera entidad) throws SQLException {
         if (entidad.getId() == null || entidadDAO.buscarPorId(entidad.getId()).isEmpty()) {
             throw new ReglaNegocioException("No se pudo actualizar: la entidad financiera seleccionada no existe. Seleccione una entidad de la tabla.");
@@ -67,7 +55,6 @@ public class FinanciacionServicio {
         entidadDAO.actualizar(entidad);
     }
 
-    // --- CU-11: Eliminar ---
     public void eliminarEntidad(Long id) throws SQLException {
         if (id == null || entidadDAO.buscarPorId(id).isEmpty()) {
             throw new ReglaNegocioException("No se pudo eliminar: la entidad financiera seleccionada no existe.");
@@ -75,7 +62,6 @@ public class FinanciacionServicio {
         try {
             entidadDAO.eliminar(id);
         } catch (SQLException e) {
-            // Excepción del CU-11: la entidad tiene relaciones activas con otros módulos
             if (e.getErrorCode() == H2_ERROR_REGISTRO_CON_DEPENDENCIAS) {
                 throw new ReglaNegocioException("No se pudo eliminar la entidad financiera: tiene registros asociados en otros módulos. "
                         + "Puede marcarla como inactiva en lugar de eliminarla.");
@@ -84,10 +70,6 @@ public class FinanciacionServicio {
         }
     }
 
-    /**
-     * Valida campos obligatorios, formatos y reglas de negocio (RNF-04).
-     * Cada mensaje indica qué falló y cómo corregirlo (RNF-06).
-     */
     private void validarDatos(EntidadFinanciera entidad) {
         if (estaVacio(entidad.getCodigo())) {
             throw new ReglaNegocioException("No se pudo guardar la entidad: el campo Código es obligatorio.");
@@ -121,7 +103,6 @@ public class FinanciacionServicio {
         entidad.setNit(entidad.getNit().trim());
     }
 
-    /** El código y el NIT no se pueden repetir entre entidades distintas. */
     private void validarCodigoYNitUnicos(EntidadFinanciera entidad) throws SQLException {
         Optional<EntidadFinanciera> mismoCodigo = entidadDAO.buscarPorCodigo(entidad.getCodigo());
         if (mismoCodigo.isPresent() && !mismoCodigo.get().getId().equals(entidad.getId())) {

@@ -1,22 +1,14 @@
--- =========================================================================
--- ÁREA 03: FINANCIACIÓN - Jerónimo Martin
--- CU-11: Gestionar entidades financieras aliadas (CRUD)
--- =========================================================================
-
--- CU-11: Entidades Financieras Aliadas
 CREATE TABLE IF NOT EXISTS entidades_financieras (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     codigo VARCHAR(20) NOT NULL UNIQUE,
     nombre VARCHAR(100) NOT NULL,
     nit VARCHAR(20) NOT NULL UNIQUE,
-    tasa_base_ea DECIMAL(6,4) NOT NULL, -- Efectiva Anual (ej: 0.1650 = 16.50%)
+    tasa_base_ea DECIMAL(6,4) NOT NULL,
     scoring_minimo INT NOT NULL DEFAULT 650,
     activo BOOLEAN NOT NULL DEFAULT TRUE,
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Datos Semilla de Financiación
--- Sin id explícito: H2 lo asigna con AUTO_INCREMENT y así no choca con los registros nuevos del CU-11
 MERGE INTO entidades_financieras (codigo, nombre, nit, tasa_base_ea, scoring_minimo, activo)
 KEY(codigo)
 VALUES 
