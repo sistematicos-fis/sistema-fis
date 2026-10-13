@@ -1,6 +1,7 @@
 package co.edu.javeriana.concesionario.clientes.persistencia;
 
 import co.edu.javeriana.concesionario.clientes.modelo.CategoriaComercial;
+import co.edu.javeriana.concesionario.clientes.modelo.CategoriaSatisfaccion;
 import co.edu.javeriana.concesionario.clientes.modelo.Cliente;
 import co.edu.javeriana.concesionario.clientes.modelo.EncuestaSatisfaccion;
 import co.edu.javeriana.concesionario.comun.bd.ConexionBD;
@@ -10,6 +11,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -110,7 +112,7 @@ public class ClienteDAO {
         return lista;
     }
 
-    private Cliente mapearCliente(ResultSet rs) throws SQLException {
+    static Cliente mapearCliente(ResultSet rs) throws SQLException {
         Cliente c = new Cliente();
         c.setId(rs.getLong("id"));
         c.setDocumento(rs.getString("documento"));
@@ -128,6 +130,20 @@ public class ClienteDAO {
                 c.setCategoriaComercial(CategoriaComercial.ESTANDAR);
             }
         }
+
+        long asesorId = rs.getLong("asesor_id");
+        c.setAsesorId(rs.wasNull() ? null : asesorId);
+        c.setIndiceSatisfaccion(rs.getBigDecimal("indice_satisfaccion"));
+        String nivel = rs.getString("nivel_satisfaccion");
+        if (nivel != null) {
+            try {
+                c.setNivelSatisfaccion(CategoriaSatisfaccion.valueOf(nivel));
+            } catch (IllegalArgumentException ex) {
+                c.setNivelSatisfaccion(null);
+            }
+        }
+        Timestamp fechaIndice = rs.getTimestamp("fecha_indice_satisfaccion");
+        c.setFechaIndiceSatisfaccion(fechaIndice != null ? fechaIndice.toLocalDateTime() : null);
         return c;
     }
 }

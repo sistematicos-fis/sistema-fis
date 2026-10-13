@@ -50,6 +50,8 @@ public class PqrsDAO {
                 p.setEstado(rs.getString("estado"));
                 java.sql.Timestamp ts = rs.getTimestamp("fecha_radicacion");
                 if (ts != null) p.setFechaRadicacion(ts.toLocalDateTime());
+                java.sql.Timestamp tsResolucion = rs.getTimestamp("fecha_resolucion");
+                if (tsResolucion != null) p.setFechaResolucion(tsResolucion.toLocalDateTime());
                 lista.add(p);
             }
         }

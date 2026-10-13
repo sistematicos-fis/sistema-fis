@@ -1,6 +1,7 @@
 package co.edu.javeriana.concesionario.clientes.modelo;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 /**
  * Entidad que representa un cliente en el concesionario.
@@ -16,6 +17,10 @@ public class Cliente {
     private String telefono;
     private BigDecimal ingresosMensuales;
     private CategoriaComercial categoriaComercial;
+    private Long asesorId;
+    private BigDecimal indiceSatisfaccion;
+    private CategoriaSatisfaccion nivelSatisfaccion;
+    private LocalDateTime fechaIndiceSatisfaccion;
 
     public Cliente() {
         this.categoriaComercial = CategoriaComercial.ESTANDAR;
@@ -63,6 +68,18 @@ public class Cliente {
 
     public CategoriaComercial getCategoriaComercial() { return categoriaComercial; }
     public void setCategoriaComercial(CategoriaComercial categoriaComercial) { this.categoriaComercial = categoriaComercial; }
+
+    public Long getAsesorId() { return asesorId; }
+    public void setAsesorId(Long asesorId) { this.asesorId = asesorId; }
+
+    public BigDecimal getIndiceSatisfaccion() { return indiceSatisfaccion; }
+    public void setIndiceSatisfaccion(BigDecimal indiceSatisfaccion) { this.indiceSatisfaccion = indiceSatisfaccion; }
+
+    public CategoriaSatisfaccion getNivelSatisfaccion() { return nivelSatisfaccion; }
+    public void setNivelSatisfaccion(CategoriaSatisfaccion nivelSatisfaccion) { this.nivelSatisfaccion = nivelSatisfaccion; }
+
+    public LocalDateTime getFechaIndiceSatisfaccion() { return fechaIndiceSatisfaccion; }
+    public void setFechaIndiceSatisfaccion(LocalDateTime fechaIndiceSatisfaccion) { this.fechaIndiceSatisfaccion = fechaIndiceSatisfaccion; }
 
     @Override
     public String toString() {

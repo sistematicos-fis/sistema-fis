@@ -12,6 +12,7 @@ public class Pqrs {
     private String descripcion;
     private String estado;
     private LocalDateTime fechaRadicacion;
+    private LocalDateTime fechaResolucion;
 
     public Pqrs() {
         this.estado = "ABIERTO";
@@ -44,4 +45,11 @@ public class Pqrs {
 
     public LocalDateTime getFechaRadicacion() { return fechaRadicacion; }
     public void setFechaRadicacion(LocalDateTime fechaRadicacion) { this.fechaRadicacion = fechaRadicacion; }
+
+    public LocalDateTime getFechaResolucion() { return fechaResolucion; }
+    public void setFechaResolucion(LocalDateTime fechaResolucion) { this.fechaResolucion = fechaResolucion; }
+
+    public boolean estaResuelta() {
+        return fechaResolucion != null;
+    }
 }
