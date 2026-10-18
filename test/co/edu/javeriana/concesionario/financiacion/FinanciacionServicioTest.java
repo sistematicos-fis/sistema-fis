@@ -4,6 +4,7 @@ import co.edu.javeriana.concesionario.comun.bd.ConexionBD;
 import co.edu.javeriana.concesionario.financiacion.logica.FinanciacionServicio;
 import co.edu.javeriana.concesionario.financiacion.logica.ReglaNegocioException;
 import co.edu.javeriana.concesionario.financiacion.modelo.EntidadFinanciera;
+import co.edu.javeriana.concesionario.financiacion.persistencia.EntidadFinancieraDAO;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -20,7 +21,7 @@ public class FinanciacionServicioTest {
     public static void setUp() {
         ConexionBD.configurarUrlMemoria();
         ConexionBD.inicializarBaseDatos();
-        servicio = new FinanciacionServicio();
+        servicio = new FinanciacionServicio(new EntidadFinancieraDAO());
     }
 
     @AfterAll

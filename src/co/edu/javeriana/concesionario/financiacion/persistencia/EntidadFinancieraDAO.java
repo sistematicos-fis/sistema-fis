@@ -12,7 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class EntidadFinancieraDAO {
+public class EntidadFinancieraDAO implements EntidadFinancieraRepositorio {
+    @Override
     public EntidadFinanciera guardar(EntidadFinanciera entidad) throws SQLException {
         String sql = "INSERT INTO entidades_financieras (codigo, nombre, nit, tasa_base_ea, scoring_minimo, activo) " +
                      "VALUES (?, ?, ?, ?, ?, ?)";
@@ -35,6 +36,7 @@ public class EntidadFinancieraDAO {
         return entidad;
     }
 
+    @Override
     public void actualizar(EntidadFinanciera entidad) throws SQLException {
         String sql = "UPDATE entidades_financieras SET codigo = ?, nombre = ?, nit = ?, tasa_base_ea = ?, " +
                      "scoring_minimo = ?, activo = ? WHERE id = ?";
@@ -51,6 +53,7 @@ public class EntidadFinancieraDAO {
         }
     }
 
+    @Override
     public void eliminar(Long id) throws SQLException {
         String sql = "DELETE FROM entidades_financieras WHERE id = ?";
         try (Connection conn = ConexionBD.obtenerConexion();
@@ -60,14 +63,17 @@ public class EntidadFinancieraDAO {
         }
     }
 
+    @Override
     public List<EntidadFinanciera> listarTodas() throws SQLException {
         return listar("SELECT * FROM entidades_financieras ORDER BY nombre");
     }
 
+    @Override
     public List<EntidadFinanciera> listarActivas() throws SQLException {
         return listar("SELECT * FROM entidades_financieras WHERE activo = TRUE ORDER BY nombre");
     }
 
+    @Override
     public Optional<EntidadFinanciera> buscarPorId(Long id) throws SQLException {
         String sql = "SELECT * FROM entidades_financieras WHERE id = ?";
         try (Connection conn = ConexionBD.obtenerConexion();
@@ -77,6 +83,7 @@ public class EntidadFinancieraDAO {
         }
     }
 
+    @Override
     public Optional<EntidadFinanciera> buscarPorCodigo(String codigo) throws SQLException {
         String sql = "SELECT * FROM entidades_financieras WHERE codigo = ?";
         try (Connection conn = ConexionBD.obtenerConexion();
@@ -86,6 +93,7 @@ public class EntidadFinancieraDAO {
         }
     }
 
+    @Override
     public Optional<EntidadFinanciera> buscarPorNit(String nit) throws SQLException {
         String sql = "SELECT * FROM entidades_financieras WHERE nit = ?";
         try (Connection conn = ConexionBD.obtenerConexion();
