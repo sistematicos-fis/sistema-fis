@@ -2,6 +2,10 @@ package co.edu.javeriana.concesionario.comun.vista;
 
 import co.edu.javeriana.concesionario.alquiler.vista.AlquilerVista;
 import co.edu.javeriana.concesionario.clientes.vista.ClienteVista;
+import co.edu.javeriana.concesionario.comun.seguridad.modelo.Modulo;
+import co.edu.javeriana.concesionario.comun.seguridad.modelo.Usuario;
+import co.edu.javeriana.concesionario.financiacion.logica.FinanciacionServicio;
+import co.edu.javeriana.concesionario.financiacion.persistencia.EntidadFinancieraDAO;
 import co.edu.javeriana.concesionario.financiacion.vista.FinanciacionVista;
 import co.edu.javeriana.concesionario.inventario.vista.InventarioVista;
 import co.edu.javeriana.concesionario.legal.vista.LegalVista;
@@ -9,52 +13,51 @@ import co.edu.javeriana.concesionario.legal.vista.LegalVista;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
+import java.util.EnumMap;
+import java.util.Map;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 
-/**
- * Ventana Principal del Sistema Concesionario Integrado.
- * Implementada con Java Swing (Cumple restricción GUI: exclusivamente Swing o JavaFX).
- * Conecta los 5 módulos funcionales del equipo.
- */
 public class VentanaPrincipal extends JFrame {
 
+    private final Usuario usuario;
+    private final Runnable alCerrarSesion;
     private final JTabbedPane tabbedPane;
-    private final JLabel lblEstado;
+    private final Map<Modulo, JComponent> vistas = new EnumMap<>(Modulo.class);
 
-    public VentanaPrincipal() {
+    public VentanaPrincipal(Usuario usuario, Runnable alCerrarSesion) {
+        this.usuario = usuario;
+        this.alCerrarSesion = alCerrarSesion;
+
         setTitle("Sistema para Venta y Alquiler de Vehículos y Motocicletas - Pontificia Universidad Javeriana");
         setSize(1200, 780);
         setMinimumSize(new java.awt.Dimension(960, 600));
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        // Barra de menú superior
-        setJMenuBar(crearBarraMenu());
-
-        // Contenedor principal con pestañas para cada módulo
         tabbedPane = new JTabbedPane();
         tabbedPane.setFont(new Font("SansSerif", Font.BOLD, 13));
+        for (Modulo modulo : Modulo.values()) {
+            if (usuario.puedeAcceder(modulo)) {
+                JComponent vista = crearVista(modulo);
+                vistas.put(modulo, vista);
+                tabbedPane.addTab(modulo.getTitulo(), vista);
+            }
+        }
 
-        // Inicializar vistas de las 5 áreas activas
-        tabbedPane.addTab("Clientes y PQRS", new ClienteVista());
-        tabbedPane.addTab("Inventario y Bodega", new InventarioVista());
-        tabbedPane.addTab("Financiación", new FinanciacionVista());
-        tabbedPane.addTab("Alquiler", new AlquilerVista());
-        tabbedPane.addTab("Documentación Legal", new LegalVista());
+        setJMenuBar(crearBarraMenu());
 
-        // Por defecto, enfocar Financiación (responsabilidad de Jerónimo)
-        tabbedPane.setSelectedIndex(2);
-
-        // Barra de estado inferior
-        lblEstado = new JLabel(" Sistema Concesionario Inicializado | H2 Database Conectada | Usuario: admin (Administrador General)");
+        JLabel lblEstado = new JLabel(" Base de datos H2 conectada | Usuario: " + usuario.getUsername()
+                + " (" + usuario.getNombreCompleto() + ") | Rol: " + usuario.getRol().getNombre());
         lblEstado.setFont(new Font("SansSerif", Font.PLAIN, 12));
         lblEstado.setBorder(BorderFactory.createEmptyBorder(6, 12, 6, 12));
 
@@ -68,44 +71,54 @@ public class VentanaPrincipal extends JFrame {
         add(pnlInferior, BorderLayout.SOUTH);
     }
 
+    private JComponent crearVista(Modulo modulo) {
+        switch (modulo) {
+            case CLIENTES:
+                return new ClienteVista();
+            case INVENTARIO:
+                return new InventarioVista();
+            case FINANCIACION:
+                return new FinanciacionVista(new FinanciacionServicio(new EntidadFinancieraDAO()));
+            case ALQUILER:
+                return new AlquilerVista();
+            case LEGAL:
+                return new LegalVista();
+            default:
+                throw new IllegalArgumentException("Módulo no soportado: " + modulo);
+        }
+    }
+
     private JMenuBar crearBarraMenu() {
         JMenuBar menuBar = new JMenuBar();
 
-        // Menú Sistema
         JMenu menuSistema = new JMenu("Sistema");
+        JMenuItem itemCerrarSesion = new JMenuItem("Cerrar sesión");
+        itemCerrarSesion.addActionListener(e -> {
+            dispose();
+            alCerrarSesion.run();
+        });
         JMenuItem itemSalir = new JMenuItem("Salir");
         itemSalir.addActionListener(e -> System.exit(0));
+        menuSistema.add(itemCerrarSesion);
         menuSistema.add(itemSalir);
 
-        // Menú Módulos
         JMenu menuModulos = new JMenu("Módulos");
-        String[] modulos = {
-            "Clientes y PQRS (Andrés Alquerque)",
-            "Inventario y Bodega (Juan Pablo León)",
-            "Financiación (Jerónimo Martin)",
-            "Alquiler (Samuel Borras)",
-            "Documentación Legal (Samuel Montaña)"
-        };
-        for (int i = 0; i < modulos.length; i++) {
-            final int index = i;
-            JMenuItem item = new JMenuItem(modulos[i]);
-            item.addActionListener(e -> tabbedPane.setSelectedIndex(index));
+        for (Map.Entry<Modulo, JComponent> entrada : vistas.entrySet()) {
+            JMenuItem item = new JMenuItem(entrada.getKey().getTitulo());
+            item.addActionListener(e -> tabbedPane.setSelectedComponent(entrada.getValue()));
             menuModulos.add(item);
         }
 
-        // Menú Ayuda
         JMenu menuAyuda = new JMenu("Ayuda");
         JMenuItem itemAcercaDe = new JMenuItem("Acerca del Proyecto");
-        itemAcercaDe.addActionListener(e -> {
-            javax.swing.JOptionPane.showMessageDialog(this,
+        itemAcercaDe.addActionListener(e -> JOptionPane.showMessageDialog(this,
                 "Sistema para Venta y Alquiler de Vehículos y Motocicletas\n" +
                 "Pontificia Universidad Javeriana - Fundamentos de Ingeniería de Software\n" +
-                "Arquitectura Modular en Capas - Java Swing & H2 Relacional Embebido\n\n" +
+                "Aplicación de escritorio en Java Swing con base de datos H2\n\n" +
                 "Integrantes: Andrés Alquerque, Juan Pablo León, Jerónimo Martin,\n" +
                 "Samuel Borras, Samuel Montaña.",
                 "Acerca de Concesionario Javeriana",
-                javax.swing.JOptionPane.INFORMATION_MESSAGE);
-        });
+                JOptionPane.INFORMATION_MESSAGE));
         menuAyuda.add(itemAcercaDe);
 
         menuBar.add(menuSistema);
