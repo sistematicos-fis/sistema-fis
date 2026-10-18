@@ -44,7 +44,8 @@ concesionario/
     │   ├── bd/             # ConexionBD.java (Única conexión autorizada a H2 con JDBC)
     │   ├── simuladores/    # Simuladores internos obligatorios (Prohibidas conexiones reales)
     │   │   └── SimuladorAseguradora.java (CU-34)
-    │   ├── vista/          # VentanaPrincipal.java (Menú principal y navegación Swing)
+    │   ├── seguridad/      # Usuario, Rol, UsuarioDAO y AutenticacionServicio (RF-26, RF-27)
+    │   ├── vista/          # VentanaLogin.java y VentanaPrincipal.java (navegación Swing)
     │   └── util/           # Validaciones, formateadores de moneda/fecha y diálogos
     │
     ├── clientes/           # CU-01 a CU-05 · Clientes y PQRS ......... Andrés Alquerque
@@ -91,7 +92,7 @@ Cada área funcional sigue estrictamente el siguiente patrón modular:
 - **GUI**: Exclusivamente implementada con **Java Swing**. Prohibido HTML/CSS.
 - **Base de Datos y Persistencia**: Motor relacional embebido **H2 Database** accedido exclusivamente mediante **JDBC** y sentencias SQL estándar. *Prohibido el uso de archivos planos de texto.*
 - **Simulación de Servicios Externos**: Prohibidas las conexiones externas reales con bancos o aseguradoras. Se implementan simuladores internos en `comun.simuladores` (`SimuladorAseguradora`).
-- **Seguridad**: Autenticación multiusuario obligatoria y control de acceso basado en roles (RBAC) en `00_init_general.sql`.
+- **Seguridad**: Inicio de sesión con usuario y contraseña (RF-26). Cada rol del SRS solo ve las pestañas de su área (RF-27). Las contraseñas se guardan como SHA-256 en la tabla `usuarios`.
 - **Control de Versiones**: Flujo con ramas `feature/CU-XX-descripcion` e integración obligatoria vía Pull Requests (PR) aprobados por pares. Push directo a `main` prohibido.
 - **Documentación**: Todos los entregables (PMP, SRS, SDD) se redactan exclusivamente en formatos **MS Word (`.docx`)** o **LibreOffice (`.odt`)**. Diagramas UML diseñados con herramientas visuales (draw.io, Enterprise Architect).
 
@@ -113,3 +114,13 @@ Cada área funcional sigue estrictamente el siguiente patrón modular:
 ./mvnw clean compile exec:java
 ```
 O directamente ejecutando la clase principal `co.edu.javeriana.concesionario.Main` desde IntelliJ IDEA o Eclipse.
+
+### Usuarios de prueba:
+| Usuario | Contraseña | Rol | Pestañas |
+|---|---|---|---|
+| admin | admin123 | Administrador | Todas |
+| asesor | asesor123 | Asesor Comercial | Clientes, Financiación, Alquiler |
+| analista | credito123 | Analista de Crédito | Financiación |
+| servicio | servicio123 | Analista de Servicio al Cliente | Clientes |
+| bodega | bodega123 | Administrador de Bodega | Inventario |
+| legal | legal123 | Analista de Documentación Legal | Documentación Legal |

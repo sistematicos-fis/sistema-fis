@@ -38,8 +38,8 @@ public class FinanciacionVista extends JPanel {
 
     private Long idSeleccionado;
 
-    public FinanciacionVista() {
-        this.servicio = new FinanciacionServicio();
+    public FinanciacionVista(FinanciacionServicio servicio) {
+        this.servicio = servicio;
 
         setLayout(new BorderLayout(10, 10));
         setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));

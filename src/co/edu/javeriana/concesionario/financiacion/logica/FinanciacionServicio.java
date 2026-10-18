@@ -1,7 +1,7 @@
 package co.edu.javeriana.concesionario.financiacion.logica;
 
 import co.edu.javeriana.concesionario.financiacion.modelo.EntidadFinanciera;
-import co.edu.javeriana.concesionario.financiacion.persistencia.EntidadFinancieraDAO;
+import co.edu.javeriana.concesionario.financiacion.persistencia.EntidadFinancieraRepositorio;
 
 import java.math.BigDecimal;
 import java.sql.SQLException;
@@ -18,49 +18,45 @@ public class FinanciacionServicio {
 
     private static final int H2_ERROR_REGISTRO_CON_DEPENDENCIAS = 23503;
 
-    private final EntidadFinancieraDAO entidadDAO;
+    private final EntidadFinancieraRepositorio entidadRepositorio;
 
-    public FinanciacionServicio() {
-        this(new EntidadFinancieraDAO());
-    }
-
-    public FinanciacionServicio(EntidadFinancieraDAO entidadDAO) {
-        this.entidadDAO = entidadDAO;
+    public FinanciacionServicio(EntidadFinancieraRepositorio entidadRepositorio) {
+        this.entidadRepositorio = entidadRepositorio;
     }
 
     public List<EntidadFinanciera> listarEntidades() throws SQLException {
-        return entidadDAO.listarTodas();
+        return entidadRepositorio.listarTodas();
     }
 
     public List<EntidadFinanciera> listarEntidadesActivas() throws SQLException {
-        return entidadDAO.listarActivas();
+        return entidadRepositorio.listarActivas();
     }
 
     public Optional<EntidadFinanciera> buscarEntidad(Long id) throws SQLException {
-        return entidadDAO.buscarPorId(id);
+        return entidadRepositorio.buscarPorId(id);
     }
 
     public EntidadFinanciera registrarEntidad(EntidadFinanciera entidad) throws SQLException {
         validarDatos(entidad);
         validarCodigoYNitUnicos(entidad);
-        return entidadDAO.guardar(entidad);
+        return entidadRepositorio.guardar(entidad);
     }
 
     public void actualizarEntidad(EntidadFinanciera entidad) throws SQLException {
-        if (entidad.getId() == null || entidadDAO.buscarPorId(entidad.getId()).isEmpty()) {
+        if (entidad.getId() == null || entidadRepositorio.buscarPorId(entidad.getId()).isEmpty()) {
             throw new ReglaNegocioException("No se pudo actualizar: la entidad financiera seleccionada no existe. Seleccione una entidad de la tabla.");
         }
         validarDatos(entidad);
         validarCodigoYNitUnicos(entidad);
-        entidadDAO.actualizar(entidad);
+        entidadRepositorio.actualizar(entidad);
     }
 
     public void eliminarEntidad(Long id) throws SQLException {
-        if (id == null || entidadDAO.buscarPorId(id).isEmpty()) {
+        if (id == null || entidadRepositorio.buscarPorId(id).isEmpty()) {
             throw new ReglaNegocioException("No se pudo eliminar: la entidad financiera seleccionada no existe.");
         }
         try {
-            entidadDAO.eliminar(id);
+            entidadRepositorio.eliminar(id);
         } catch (SQLException e) {
             if (e.getErrorCode() == H2_ERROR_REGISTRO_CON_DEPENDENCIAS) {
                 throw new ReglaNegocioException("No se pudo eliminar la entidad financiera: tiene registros asociados en otros módulos. "
@@ -104,11 +100,11 @@ public class FinanciacionServicio {
     }
 
     private void validarCodigoYNitUnicos(EntidadFinanciera entidad) throws SQLException {
-        Optional<EntidadFinanciera> mismoCodigo = entidadDAO.buscarPorCodigo(entidad.getCodigo());
+        Optional<EntidadFinanciera> mismoCodigo = entidadRepositorio.buscarPorCodigo(entidad.getCodigo());
         if (mismoCodigo.isPresent() && !mismoCodigo.get().getId().equals(entidad.getId())) {
             throw new ReglaNegocioException("No se pudo guardar la entidad: ya existe otra entidad con el código " + entidad.getCodigo() + ".");
         }
-        Optional<EntidadFinanciera> mismoNit = entidadDAO.buscarPorNit(entidad.getNit());
+        Optional<EntidadFinanciera> mismoNit = entidadRepositorio.buscarPorNit(entidad.getNit());
         if (mismoNit.isPresent() && !mismoNit.get().getId().equals(entidad.getId())) {
             throw new ReglaNegocioException("No se pudo guardar la entidad: ya existe otra entidad con el NIT " + entidad.getNit() + ".");
         }
