@@ -4,74 +4,70 @@ import co.edu.javeriana.concesionario.alquiler.vista.AlquilerVista;
 import co.edu.javeriana.concesionario.clientes.vista.ClienteVista;
 import co.edu.javeriana.concesionario.comun.seguridad.modelo.Modulo;
 import co.edu.javeriana.concesionario.comun.seguridad.modelo.Usuario;
+import co.edu.javeriana.concesionario.comun.util.MensajeUtil;
 import co.edu.javeriana.concesionario.financiacion.logica.FinanciacionServicio;
 import co.edu.javeriana.concesionario.financiacion.persistencia.EntidadFinancieraDAO;
 import co.edu.javeriana.concesionario.financiacion.vista.FinanciacionVista;
 import co.edu.javeriana.concesionario.inventario.vista.InventarioVista;
 import co.edu.javeriana.concesionario.legal.vista.LegalVista;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Font;
 import java.util.EnumMap;
 import java.util.Map;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JTabbedPane;
+import javafx.application.Platform;
+import javafx.geometry.Insets;
+import javafx.scene.Node;
+import javafx.scene.Scene;
+import javafx.scene.control.Label;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.stage.Stage;
 
-public class VentanaPrincipal extends JFrame {
+public class VentanaPrincipal extends Stage {
 
     private final Usuario usuario;
     private final Runnable alCerrarSesion;
-    private final JTabbedPane tabbedPane;
-    private final Map<Modulo, JComponent> vistas = new EnumMap<>(Modulo.class);
+    private final TabPane tabPane;
+    private final Map<Modulo, Tab> pestanas = new EnumMap<>(Modulo.class);
 
     public VentanaPrincipal(Usuario usuario, Runnable alCerrarSesion) {
         this.usuario = usuario;
         this.alCerrarSesion = alCerrarSesion;
 
         setTitle("Sistema para Venta y Alquiler de Vehículos y Motocicletas - Pontificia Universidad Javeriana");
-        setSize(1200, 780);
-        setMinimumSize(new java.awt.Dimension(960, 600));
-        setLocationRelativeTo(null);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setMinWidth(960);
+        setMinHeight(600);
+        setOnCloseRequest(e -> salir());
 
-        tabbedPane = new JTabbedPane();
-        tabbedPane.setFont(new Font("SansSerif", Font.BOLD, 13));
+        tabPane = new TabPane();
+        tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
+        tabPane.setStyle("-fx-font-weight: bold; -fx-font-size: 13px;");
         for (Modulo modulo : Modulo.values()) {
             if (usuario.puedeAcceder(modulo)) {
-                JComponent vista = crearVista(modulo);
-                vistas.put(modulo, vista);
-                tabbedPane.addTab(modulo.getTitulo(), vista);
+                Node vista = crearVista(modulo);
+                vista.setStyle("-fx-font-weight: normal; -fx-font-size: 12px;");
+                Tab pestana = new Tab(modulo.getTitulo(), vista);
+                pestanas.put(modulo, pestana);
+                tabPane.getTabs().add(pestana);
             }
         }
 
-        setJMenuBar(crearBarraMenu());
-
-        JLabel lblEstado = new JLabel(" Base de datos H2 conectada | Usuario: " + usuario.getUsername()
+        Label lblEstado = new Label("Base de datos H2 conectada | Usuario: " + usuario.getUsername()
                 + " (" + usuario.getNombreCompleto() + ") | Rol: " + usuario.getRol().getNombre());
-        lblEstado.setFont(new Font("SansSerif", Font.PLAIN, 12));
-        lblEstado.setBorder(BorderFactory.createEmptyBorder(6, 12, 6, 12));
+        HBox pnlInferior = new HBox(lblEstado);
+        pnlInferior.setPadding(new Insets(6, 12, 6, 12));
+        pnlInferior.setStyle("-fx-background-color: #f5f5f5; -fx-border-color: #d2d2d2; -fx-border-width: 1 0 0 0;");
 
-        JPanel pnlInferior = new JPanel(new BorderLayout());
-        pnlInferior.setBackground(new Color(245, 245, 245));
-        pnlInferior.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(210, 210, 210)));
-        pnlInferior.add(lblEstado, BorderLayout.WEST);
-
-        setLayout(new BorderLayout());
-        add(tabbedPane, BorderLayout.CENTER);
-        add(pnlInferior, BorderLayout.SOUTH);
+        BorderPane raiz = new BorderPane(tabPane, crearBarraMenu(), null, pnlInferior, null);
+        setScene(new Scene(raiz, 1200, 780));
+        centerOnScreen();
     }
 
-    private JComponent crearVista(Modulo modulo) {
+    private Node crearVista(Modulo modulo) {
         switch (modulo) {
             case CLIENTES:
                 return new ClienteVista();
@@ -88,44 +84,38 @@ public class VentanaPrincipal extends JFrame {
         }
     }
 
-    private JMenuBar crearBarraMenu() {
-        JMenuBar menuBar = new JMenuBar();
-
-        JMenu menuSistema = new JMenu("Sistema");
-        JMenuItem itemCerrarSesion = new JMenuItem("Cerrar sesión");
-        itemCerrarSesion.addActionListener(e -> {
-            dispose();
+    private MenuBar crearBarraMenu() {
+        MenuItem itemCerrarSesion = new MenuItem("Cerrar sesión");
+        itemCerrarSesion.setOnAction(e -> {
+            close();
             alCerrarSesion.run();
         });
-        JMenuItem itemSalir = new JMenuItem("Salir");
-        itemSalir.addActionListener(e -> System.exit(0));
-        menuSistema.add(itemCerrarSesion);
-        menuSistema.add(itemSalir);
+        MenuItem itemSalir = new MenuItem("Salir");
+        itemSalir.setOnAction(e -> salir());
+        Menu menuSistema = new Menu("Sistema", null, itemCerrarSesion, itemSalir);
 
-        JMenu menuModulos = new JMenu("Módulos");
-        for (Map.Entry<Modulo, JComponent> entrada : vistas.entrySet()) {
-            JMenuItem item = new JMenuItem(entrada.getKey().getTitulo());
-            item.addActionListener(e -> tabbedPane.setSelectedComponent(entrada.getValue()));
-            menuModulos.add(item);
+        Menu menuModulos = new Menu("Módulos");
+        for (Map.Entry<Modulo, Tab> entrada : pestanas.entrySet()) {
+            MenuItem item = new MenuItem(entrada.getKey().getTitulo());
+            item.setOnAction(e -> tabPane.getSelectionModel().select(entrada.getValue()));
+            menuModulos.getItems().add(item);
         }
 
-        JMenu menuAyuda = new JMenu("Ayuda");
-        JMenuItem itemAcercaDe = new JMenuItem("Acerca del Proyecto");
-        itemAcercaDe.addActionListener(e -> JOptionPane.showMessageDialog(this,
+        MenuItem itemAcercaDe = new MenuItem("Acerca del Proyecto");
+        itemAcercaDe.setOnAction(e -> MensajeUtil.mostrarInfo(tabPane,
                 "Sistema para Venta y Alquiler de Vehículos y Motocicletas\n" +
                 "Pontificia Universidad Javeriana - Fundamentos de Ingeniería de Software\n" +
-                "Aplicación de escritorio en Java Swing con base de datos H2\n\n" +
+                "Aplicación de escritorio en JavaFX con base de datos H2\n\n" +
                 "Integrantes: Andrés Alquerque, Juan Pablo León, Jerónimo Martin,\n" +
                 "Samuel Borras, Samuel Montaña.",
-                "Acerca de Concesionario Javeriana",
-                JOptionPane.INFORMATION_MESSAGE));
-        menuAyuda.add(itemAcercaDe);
+                "Acerca de Concesionario Javeriana"));
+        Menu menuAyuda = new Menu("Ayuda", null, itemAcercaDe);
 
-        menuBar.add(menuSistema);
-        menuBar.add(menuModulos);
-        menuBar.add(Box.createHorizontalGlue());
-        menuBar.add(menuAyuda);
+        return new MenuBar(menuSistema, menuModulos, menuAyuda);
+    }
 
-        return menuBar;
+    private void salir() {
+        Platform.exit();
+        System.exit(0);
     }
 }

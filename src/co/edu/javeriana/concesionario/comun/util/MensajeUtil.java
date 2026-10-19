@@ -1,30 +1,44 @@
 package co.edu.javeriana.concesionario.comun.util;
 
-import java.awt.Component;
-import javax.swing.JOptionPane;
+import javafx.scene.Node;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+import javafx.stage.Window;
 
 /**
- * Utilidades para diálogos estándar Swing (mensajes y confirmaciones).
+ * Diálogos estándar de la aplicación (información, advertencia, error y confirmación).
  */
 public final class MensajeUtil {
 
     private MensajeUtil() {
     }
 
-    public static void mostrarInfo(Component parent, String mensaje, String titulo) {
-        JOptionPane.showMessageDialog(parent, mensaje, titulo, JOptionPane.INFORMATION_MESSAGE);
+    public static void mostrarInfo(Node origen, String mensaje, String titulo) {
+        crear(Alert.AlertType.INFORMATION, origen, mensaje, titulo).showAndWait();
     }
 
-    public static void mostrarAdvertencia(Component parent, String mensaje, String titulo) {
-        JOptionPane.showMessageDialog(parent, mensaje, titulo, JOptionPane.WARNING_MESSAGE);
+    public static void mostrarAdvertencia(Node origen, String mensaje, String titulo) {
+        crear(Alert.AlertType.WARNING, origen, mensaje, titulo).showAndWait();
     }
 
-    public static void mostrarError(Component parent, String mensaje, String titulo) {
-        JOptionPane.showMessageDialog(parent, mensaje, titulo, JOptionPane.ERROR_MESSAGE);
+    public static void mostrarError(Node origen, String mensaje, String titulo) {
+        crear(Alert.AlertType.ERROR, origen, mensaje, titulo).showAndWait();
     }
 
-    public static boolean confirmar(Component parent, String mensaje, String titulo) {
-        int resp = JOptionPane.showConfirmDialog(parent, mensaje, titulo, JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-        return resp == JOptionPane.YES_OPTION;
+    public static boolean confirmar(Node origen, String mensaje, String titulo) {
+        Alert alerta = crear(Alert.AlertType.CONFIRMATION, origen, mensaje, titulo);
+        alerta.getButtonTypes().setAll(ButtonType.YES, ButtonType.NO);
+        return alerta.showAndWait().filter(ButtonType.YES::equals).isPresent();
+    }
+
+    private static Alert crear(Alert.AlertType tipo, Node origen, String mensaje, String titulo) {
+        Alert alerta = new Alert(tipo, mensaje);
+        alerta.setTitle(titulo);
+        alerta.setHeaderText(null);
+        Window ventana = origen != null && origen.getScene() != null ? origen.getScene().getWindow() : null;
+        if (ventana != null) {
+            alerta.initOwner(ventana);
+        }
+        return alerta;
     }
 }

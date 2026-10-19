@@ -17,4 +17,4 @@
 - `modelo/`: `PuntoEntrega`.
 - `persistencia/`: `PuntoEntregaRepository`, `InMemoryPuntoEntregaRepository`.
 - `logica/`: `PuntoEntregaService`.
-- `vista/`: `AlquilerVista` (Java Swing).
+- `vista/`: `AlquilerVista` (JavaFX).

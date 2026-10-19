@@ -17,4 +17,4 @@
 - `modelo/`: `PolizaSeguro`, `Aseguradora`.
 - `persistencia/`: `LegalDAO` (JDBC H2).
 - `logica/`: `LegalServicio`.
-- `vista/`: `LegalVista` (Java Swing).
+- `vista/`: `LegalVista` (JavaFX).

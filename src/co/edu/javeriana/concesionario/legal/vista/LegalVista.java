@@ -2,86 +2,63 @@ package co.edu.javeriana.concesionario.legal.vista;
 
 import co.edu.javeriana.concesionario.comun.util.FormatoUtil;
 import co.edu.javeriana.concesionario.comun.util.MensajeUtil;
+import co.edu.javeriana.concesionario.comun.vista.ComponentesFX;
 import co.edu.javeriana.concesionario.legal.logica.LegalServicio;
 import co.edu.javeriana.concesionario.legal.modelo.PolizaSeguro;
 
-import java.awt.BorderLayout;
-import java.awt.FlowLayout;
-import java.awt.GridLayout;
 import java.math.BigDecimal;
 import java.util.List;
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.table.DefaultTableModel;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.BorderPane;
 
 /**
- * Panel Swing para la gestión legal y emisión de pólizas con aseguradora simulada (CU-31 a CU-35).
+ * Pantalla JavaFX para la gestión legal y emisión de pólizas con aseguradora simulada (CU-31 a CU-35).
  * Responsable: Samuel Montaña
  */
-public class LegalVista extends JPanel {
+public class LegalVista extends BorderPane {
 
     private final LegalServicio servicio;
-    private final JTextField txtVin;
-    private final JTextField txtValorComercial;
-    private final JComboBox<String> cmbTipoPoliza;
-    private final JTable tblPolizas;
-    private final DefaultTableModel modeloTabla;
+    private final TextField txtVin;
+    private final TextField txtValorComercial;
+    private final ComboBox<String> cmbTipoPoliza;
+    private final TableView<Object[]> tblPolizas;
 
     public LegalVista() {
         this.servicio = new LegalServicio();
-        setLayout(new BorderLayout(10, 10));
-        setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+        setPadding(new Insets(15));
 
         // Formulario
-        JPanel pnlForm = new JPanel(new GridLayout(2, 4, 8, 8));
-        pnlForm.setBorder(BorderFactory.createTitledBorder("Emitir Póliza con Aseguradora Simulada (CU-34)"));
+        txtVin = new TextField("93HBL4820P1029381");
+        txtValorComercial = new TextField("115000000");
+        cmbTipoPoliza = new ComboBox<>();
+        cmbTipoPoliza.getItems().addAll("TODO_RIESGO_RESPONSABILIDAD", "SOAT", "EXTRACONTRACTUAL");
+        cmbTipoPoliza.getSelectionModel().selectFirst();
 
-        pnlForm.add(new JLabel("VIN Vehículo:"));
-        txtVin = new JTextField("93HBL4820P1029381");
-        pnlForm.add(txtVin);
+        Button btnEmitir = new Button("Emitir Póliza (Simulador)");
+        btnEmitir.setStyle("-fx-background-color: #228b22; -fx-text-fill: white; -fx-font-weight: bold;");
+        btnEmitir.setOnAction(e -> emitirPoliza());
 
-        pnlForm.add(new JLabel("Valor Comercial ($):"));
-        txtValorComercial = new JTextField("115000000");
-        pnlForm.add(txtValorComercial);
-
-        pnlForm.add(new JLabel("Tipo de Póliza:"));
-        cmbTipoPoliza = new JComboBox<>(new String[]{"TODO_RIESGO_RESPONSABILIDAD", "SOAT", "EXTRACONTRACTUAL"});
-        pnlForm.add(cmbTipoPoliza);
-
-        JButton btnEmitir = new JButton("Emitir Póliza (Simulador)");
-        btnEmitir.setBackground(new java.awt.Color(34, 139, 34));
-        btnEmitir.setForeground(java.awt.Color.WHITE);
-        btnEmitir.setFont(new java.awt.Font("SansSerif", java.awt.Font.BOLD, 12));
-        btnEmitir.addActionListener(e -> emitirPoliza());
-        pnlForm.add(btnEmitir);
-
-        add(pnlForm, BorderLayout.NORTH);
+        setTop(ComponentesFX.crearSeccion("Emitir Póliza con Aseguradora Simulada (CU-34)", ComponentesFX.crearFormulario(4,
+                new Label("VIN Vehículo:"), txtVin,
+                new Label("Valor Comercial ($):"), txtValorComercial,
+                new Label("Tipo de Póliza:"), cmbTipoPoliza,
+                btnEmitir)));
 
         // Tabla
-        String[] columnas = {"ID", "N° Póliza", "Tipo", "Prima Anual", "Cobertura Total", "Estado", "Cód. Autorización"};
-        modeloTabla = new DefaultTableModel(columnas, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
-        tblPolizas = new JTable(modeloTabla);
-        tblPolizas.setRowHeight(22);
-        add(new JScrollPane(tblPolizas), BorderLayout.CENTER);
+        tblPolizas = ComponentesFX.crearTabla("ID", "N° Póliza", "Tipo", "Prima Anual", "Cobertura Total", "Estado", "Cód. Autorización");
+        BorderPane.setMargin(tblPolizas, new Insets(10, 0, 0, 0));
+        setCenter(tblPolizas);
 
         // Barra Sur
-        JPanel pnlSur = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
-        JButton btnRefrescar = new JButton("Actualizar Pólizas");
-        btnRefrescar.addActionListener(e -> cargarPolizas());
-        pnlSur.add(btnRefrescar);
-
-        add(pnlSur, BorderLayout.SOUTH);
+        Button btnRefrescar = new Button("Actualizar Pólizas");
+        btnRefrescar.setOnAction(e -> cargarPolizas());
+        setBottom(ComponentesFX.crearBarraBotones(Pos.CENTER_RIGHT, btnRefrescar));
 
         cargarPolizas();
     }
@@ -90,7 +67,7 @@ public class LegalVista extends JPanel {
         try {
             String vin = txtVin.getText().trim();
             BigDecimal valor = new BigDecimal(txtValorComercial.getText().trim());
-            String tipo = (String) cmbTipoPoliza.getSelectedItem();
+            String tipo = cmbTipoPoliza.getValue();
 
             PolizaSeguro poliza = servicio.emitirPolizaConSimulador(1L, 1L, 1L, vin, valor, tipo);
             MensajeUtil.mostrarInfo(this, "¡Póliza emitida exitosamente!\nN°: " + poliza.getNumeroPoliza() +
@@ -107,9 +84,9 @@ public class LegalVista extends JPanel {
     private void cargarPolizas() {
         try {
             List<PolizaSeguro> lista = servicio.listarPolizas();
-            modeloTabla.setRowCount(0);
+            tblPolizas.getItems().clear();
             for (PolizaSeguro p : lista) {
-                modeloTabla.addRow(new Object[]{
+                tblPolizas.getItems().add(new Object[]{
                     p.getId(),
                     p.getNumeroPoliza(),
                     p.getTipoPoliza(),

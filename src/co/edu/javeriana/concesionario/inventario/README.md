@@ -17,4 +17,4 @@
 - `modelo/`: `Vehiculo`, `Bodega`, `CategoriaVehiculo`.
 - `persistencia/`: `VehiculoDAO` (JDBC con H2).
 - `logica/`: `InventarioServicio`.
-- `vista/`: `InventarioVista` (Java Swing).
+- `vista/`: `InventarioVista` (JavaFX).

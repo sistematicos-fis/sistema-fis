@@ -2,109 +2,78 @@ package co.edu.javeriana.concesionario.inventario.vista;
 
 import co.edu.javeriana.concesionario.comun.util.FormatoUtil;
 import co.edu.javeriana.concesionario.comun.util.MensajeUtil;
+import co.edu.javeriana.concesionario.comun.vista.ComponentesFX;
 import co.edu.javeriana.concesionario.inventario.logica.InventarioServicio;
 import co.edu.javeriana.concesionario.inventario.modelo.CategoriaVehiculo;
 import co.edu.javeriana.concesionario.inventario.modelo.Vehiculo;
 
-import java.awt.BorderLayout;
-import java.awt.FlowLayout;
-import java.awt.GridLayout;
 import java.math.BigDecimal;
 import java.util.List;
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.table.DefaultTableModel;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.BorderPane;
 
 /**
- * Panel Swing para la gestión del inventario y catálogo de vehículos (CU-06 a CU-10).
+ * Pantalla JavaFX para la gestión del inventario y catálogo de vehículos (CU-06 a CU-10).
  * Responsable: Juan Pablo León
  */
-public class InventarioVista extends JPanel {
+public class InventarioVista extends BorderPane {
 
     private final InventarioServicio servicio;
-    private final JTextField txtVin;
-    private final JTextField txtPlaca;
-    private final JComboBox<CategoriaVehiculo> cmbTipo;
-    private final JTextField txtMarca;
-    private final JTextField txtLinea;
-    private final JTextField txtAnio;
-    private final JTextField txtColor;
-    private final JTextField txtPrecio;
-    private final JTable tblVehiculos;
-    private final DefaultTableModel modeloTabla;
+    private final TextField txtVin;
+    private final TextField txtPlaca;
+    private final ComboBox<CategoriaVehiculo> cmbTipo;
+    private final TextField txtMarca;
+    private final TextField txtLinea;
+    private final TextField txtAnio;
+    private final TextField txtColor;
+    private final TextField txtPrecio;
+    private final TableView<Object[]> tblVehiculos;
 
     public InventarioVista() {
         this.servicio = new InventarioServicio();
-        setLayout(new BorderLayout(10, 10));
-        setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+        setPadding(new Insets(15));
 
         // Formulario
-        JPanel pnlForm = new JPanel(new GridLayout(3, 6, 8, 8));
-        pnlForm.setBorder(BorderFactory.createTitledBorder("Nuevo Vehículo / Motocicleta (CU-06)"));
+        txtVin = new TextField();
+        txtPlaca = new TextField();
+        cmbTipo = new ComboBox<>();
+        cmbTipo.getItems().addAll(CategoriaVehiculo.values());
+        cmbTipo.getSelectionModel().selectFirst();
+        txtMarca = new TextField("Toyota");
+        txtLinea = new TextField("Corolla Cross");
+        txtAnio = new TextField("2024");
+        txtColor = new TextField("Plata");
+        txtPrecio = new TextField("120000000");
 
-        pnlForm.add(new JLabel("VIN:"));
-        txtVin = new JTextField();
-        pnlForm.add(txtVin);
+        Button btnRegistrar = new Button("Registrar en Stock");
+        btnRegistrar.setOnAction(e -> registrarVehiculo());
 
-        pnlForm.add(new JLabel("Placa:"));
-        txtPlaca = new JTextField();
-        pnlForm.add(txtPlaca);
-
-        pnlForm.add(new JLabel("Tipo:"));
-        cmbTipo = new JComboBox<>(CategoriaVehiculo.values());
-        pnlForm.add(cmbTipo);
-
-        pnlForm.add(new JLabel("Marca:"));
-        txtMarca = new JTextField("Toyota");
-        pnlForm.add(txtMarca);
-
-        pnlForm.add(new JLabel("Línea:"));
-        txtLinea = new JTextField("Corolla Cross");
-        pnlForm.add(txtLinea);
-
-        pnlForm.add(new JLabel("Año Modelo:"));
-        txtAnio = new JTextField("2024");
-        pnlForm.add(txtAnio);
-
-        pnlForm.add(new JLabel("Color:"));
-        txtColor = new JTextField("Plata");
-        pnlForm.add(txtColor);
-
-        pnlForm.add(new JLabel("Precio Venta ($):"));
-        txtPrecio = new JTextField("120000000");
-        pnlForm.add(txtPrecio);
-
-        JButton btnRegistrar = new JButton("Registrar en Stock");
-        btnRegistrar.addActionListener(e -> registrarVehiculo());
-        pnlForm.add(btnRegistrar);
-
-        add(pnlForm, BorderLayout.NORTH);
+        setTop(ComponentesFX.crearSeccion("Nuevo Vehículo / Motocicleta (CU-06)", ComponentesFX.crearFormulario(6,
+                new Label("VIN:"), txtVin,
+                new Label("Placa:"), txtPlaca,
+                new Label("Tipo:"), cmbTipo,
+                new Label("Marca:"), txtMarca,
+                new Label("Línea:"), txtLinea,
+                new Label("Año Modelo:"), txtAnio,
+                new Label("Color:"), txtColor,
+                new Label("Precio Venta ($):"), txtPrecio,
+                btnRegistrar)));
 
         // Tabla Central
-        String[] columnas = {"ID", "VIN", "Placa", "Tipo", "Marca", "Línea", "Año", "Color", "Precio", "Estado"};
-        modeloTabla = new DefaultTableModel(columnas, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
-        tblVehiculos = new JTable(modeloTabla);
-        tblVehiculos.setRowHeight(22);
-        add(new JScrollPane(tblVehiculos), BorderLayout.CENTER);
+        tblVehiculos = ComponentesFX.crearTabla("ID", "VIN", "Placa", "Tipo", "Marca", "Línea", "Año", "Color", "Precio", "Estado");
+        BorderPane.setMargin(tblVehiculos, new Insets(10, 0, 0, 0));
+        setCenter(tblVehiculos);
 
         // Barra Inferior
-        JPanel pnlSur = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
-        JButton btnRefrescar = new JButton("Actualizar Lista");
-        btnRefrescar.addActionListener(e -> cargarVehiculos());
-        pnlSur.add(btnRefrescar);
-
-        add(pnlSur, BorderLayout.SOUTH);
+        Button btnRefrescar = new Button("Actualizar Lista");
+        btnRefrescar.setOnAction(e -> cargarVehiculos());
+        setBottom(ComponentesFX.crearBarraBotones(Pos.CENTER_RIGHT, btnRefrescar));
 
         cargarVehiculos();
     }
@@ -113,7 +82,7 @@ public class InventarioVista extends JPanel {
         try {
             String vin = txtVin.getText().trim();
             String placa = txtPlaca.getText().trim();
-            CategoriaVehiculo tipo = (CategoriaVehiculo) cmbTipo.getSelectedItem();
+            CategoriaVehiculo tipo = cmbTipo.getValue();
             String marca = txtMarca.getText().trim();
             String linea = txtLinea.getText().trim();
             int anio = Integer.parseInt(txtAnio.getText().trim());
@@ -124,8 +93,8 @@ public class InventarioVista extends JPanel {
             MensajeUtil.mostrarInfo(this, "Vehículo registrado en inventario.", "Éxito");
             cargarVehiculos();
 
-            txtVin.setText("");
-            txtPlaca.setText("");
+            txtVin.clear();
+            txtPlaca.clear();
         } catch (Exception ex) {
             MensajeUtil.mostrarError(this, "Error al registrar vehículo: " + ex.getMessage(), "Error");
         }
@@ -134,9 +103,9 @@ public class InventarioVista extends JPanel {
     private void cargarVehiculos() {
         try {
             List<Vehiculo> lista = servicio.listarDisponibles();
-            modeloTabla.setRowCount(0);
+            tblVehiculos.getItems().clear();
             for (Vehiculo v : lista) {
-                modeloTabla.addRow(new Object[]{
+                tblVehiculos.getItems().add(new Object[]{
                     v.getId(),
                     v.getVin(),
                     v.getPlaca() != null ? v.getPlaca() : "-",
