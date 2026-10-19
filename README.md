@@ -38,14 +38,14 @@ concesionario/
 │       ├── alquiler/       # Pruebas de gestión de sedes y puntos de entrega
 │       └── legal/          # Pruebas de emisión con simulador de aseguradora
 └── src/co/edu/javeriana/concesionario/
-    ├── Main.java           # Punto de entrada que arranca la aplicación de escritorio Swing
+    ├── Main.java           # Punto de entrada que arranca la aplicación de escritorio JavaFX
     │
     ├── comun/              # Componentes compartidos por 2 o más áreas
     │   ├── bd/             # ConexionBD.java (Única conexión autorizada a H2 con JDBC)
     │   ├── simuladores/    # Simuladores internos obligatorios (Prohibidas conexiones reales)
     │   │   └── SimuladorAseguradora.java (CU-34)
     │   ├── seguridad/      # Usuario, Rol, UsuarioDAO y AutenticacionServicio (RF-26, RF-27)
-    │   ├── vista/          # VentanaLogin.java y VentanaPrincipal.java (navegación Swing)
+    │   ├── vista/          # VentanaLogin.java y VentanaPrincipal.java (navegación JavaFX)
     │   └── util/           # Validaciones, formateadores de moneda/fecha y diálogos
     │
     ├── clientes/           # CU-01 a CU-05 · Clientes y PQRS ......... Andrés Alquerque
@@ -81,7 +81,7 @@ Cada área funcional sigue estrictamente el siguiente patrón modular:
 ├── modelo/                 # Entidades y objetos de valor (Datos)
 ├── persistencia/           # DAOs con JDBC puro sobre el motor relacional H2
 ├── logica/                 # Reglas de negocio y algoritmos de cálculo (No CRUD)
-└── vista/                  # Formularios, diálogos y paneles en Java Swing
+└── vista/                  # Formularios, diálogos y pantallas en JavaFX
 ```
 
 ---
@@ -89,7 +89,7 @@ Cada área funcional sigue estrictamente el siguiente patrón modular:
 ## 4. Cumplimiento de Restricciones Técnicas y del Curso
 
 - **Tipo de Aplicación**: Estrictamente de escritorio Java. Prohibido desarrollo web o híbrido.
-- **GUI**: Exclusivamente implementada con **Java Swing**. Prohibido HTML/CSS.
+- **GUI**: Exclusivamente implementada con **JavaFX**. Prohibido HTML/CSS.
 - **Base de Datos y Persistencia**: Motor relacional embebido **H2 Database** accedido exclusivamente mediante **JDBC** y sentencias SQL estándar. *Prohibido el uso de archivos planos de texto.*
 - **Simulación de Servicios Externos**: Prohibidas las conexiones externas reales con bancos o aseguradoras. Se implementan simuladores internos en `comun.simuladores` (`SimuladorAseguradora`).
 - **Seguridad**: Inicio de sesión con usuario y contraseña (RF-26). Cada rol del SRS solo ve las pestañas de su área (RF-27). Las contraseñas se guardan como SHA-256 en la tabla `usuarios`.

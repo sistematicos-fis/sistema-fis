@@ -17,4 +17,4 @@
 - `modelo/`: Entidades de dominio (`Cliente`, `Pqrs`, `EncuestaSatisfaccion`, `CategoriaSatisfaccion`, `CategoriaComercial`).
 - `persistencia/`: Acceso a datos con JDBC y H2 (`ClienteDAO`, `PqrsDAO`).
 - `logica/`: Reglas de negocio y cálculo (`CalculadoraIndiceSatisfaccion`, `ClienteServicio`).
-- `vista/`: Formularios y tableros Swing (`ClienteVista`, `IndiceSatisfaccionVista`).
+- `vista/`: Formularios y tableros JavaFX (`ClienteVista`, `IndiceSatisfaccionVista`).

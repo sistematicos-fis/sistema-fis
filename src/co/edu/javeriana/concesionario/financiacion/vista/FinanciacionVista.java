@@ -2,112 +2,84 @@ package co.edu.javeriana.concesionario.financiacion.vista;
 
 import co.edu.javeriana.concesionario.comun.util.FormatoUtil;
 import co.edu.javeriana.concesionario.comun.util.MensajeUtil;
+import co.edu.javeriana.concesionario.comun.vista.ComponentesFX;
 import co.edu.javeriana.concesionario.financiacion.logica.FinanciacionServicio;
 import co.edu.javeriana.concesionario.financiacion.logica.ReglaNegocioException;
 import co.edu.javeriana.concesionario.financiacion.modelo.EntidadFinanciera;
 
-import java.awt.BorderLayout;
-import java.awt.FlowLayout;
-import java.awt.GridLayout;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.SQLException;
 import java.util.List;
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
-import javax.swing.table.DefaultTableModel;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.SelectionMode;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
+import javafx.scene.control.TitledPane;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.VBox;
 
-public class FinanciacionVista extends JPanel {
+public class FinanciacionVista extends BorderPane {
     private final FinanciacionServicio servicio;
 
-    private final JTextField txtCodigo;
-    private final JTextField txtNombre;
-    private final JTextField txtNit;
-    private final JTextField txtTasaEa;
-    private final JTextField txtScoring;
-    private final JCheckBox chkActivo;
-    private final JTable tblEntidades;
-    private final DefaultTableModel modeloTabla;
+    private final TextField txtCodigo;
+    private final TextField txtNombre;
+    private final TextField txtNit;
+    private final TextField txtTasaEa;
+    private final TextField txtScoring;
+    private final CheckBox chkActivo;
+    private final TableView<Object[]> tblEntidades;
 
     private Long idSeleccionado;
 
     public FinanciacionVista(FinanciacionServicio servicio) {
         this.servicio = servicio;
 
-        setLayout(new BorderLayout(10, 10));
-        setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+        setPadding(new Insets(15));
 
-        JPanel pnlForm = new JPanel(new GridLayout(3, 4, 10, 10));
-        pnlForm.setBorder(BorderFactory.createTitledBorder("Entidad Financiera Aliada (CU-11)"));
+        txtCodigo = new TextField();
+        txtNombre = new TextField();
+        txtNit = new TextField();
+        txtTasaEa = new TextField();
+        txtScoring = new TextField();
+        chkActivo = new CheckBox("Activa");
+        chkActivo.setSelected(true);
 
-        pnlForm.add(new JLabel("Código (ej: BANCOL):"));
-        txtCodigo = new JTextField();
-        pnlForm.add(txtCodigo);
+        Button btnNuevo = new Button("Nuevo");
+        btnNuevo.setOnAction(e -> limpiarFormulario());
+        Button btnGuardar = new Button("Guardar");
+        btnGuardar.setOnAction(e -> guardarEntidad());
+        Button btnEliminar = new Button("Eliminar");
+        btnEliminar.setOnAction(e -> eliminarEntidad());
+        Button btnRefrescar = new Button("Refrescar");
+        btnRefrescar.setOnAction(e -> cargarEntidades());
 
-        pnlForm.add(new JLabel("Nombre:"));
-        txtNombre = new JTextField();
-        pnlForm.add(txtNombre);
+        VBox pnlForm = new VBox(ComponentesFX.crearFormulario(4,
+                new Label("Código (ej: BANCOL):"), txtCodigo,
+                new Label("Nombre:"), txtNombre,
+                new Label("NIT (ej: 890.903.938-8):"), txtNit,
+                new Label("Tasa base E.A. (% ej: 16.5):"), txtTasaEa,
+                new Label("Scoring mínimo (300 - 900):"), txtScoring,
+                new Label("Estado:"), chkActivo),
+                ComponentesFX.crearBarraBotones(Pos.CENTER_LEFT, btnNuevo, btnGuardar, btnEliminar, btnRefrescar));
+        setTop(ComponentesFX.crearSeccion("Entidad Financiera Aliada (CU-11)", pnlForm));
 
-        pnlForm.add(new JLabel("NIT (ej: 890.903.938-8):"));
-        txtNit = new JTextField();
-        pnlForm.add(txtNit);
-
-        pnlForm.add(new JLabel("Tasa base E.A. (% ej: 16.5):"));
-        txtTasaEa = new JTextField();
-        pnlForm.add(txtTasaEa);
-
-        pnlForm.add(new JLabel("Scoring mínimo (300 - 900):"));
-        txtScoring = new JTextField();
-        pnlForm.add(txtScoring);
-
-        pnlForm.add(new JLabel("Estado:"));
-        chkActivo = new JCheckBox("Activa", true);
-        pnlForm.add(chkActivo);
-
-        JPanel pnlBotones = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
-        JButton btnNuevo = new JButton("Nuevo");
-        btnNuevo.addActionListener(e -> limpiarFormulario());
-        JButton btnGuardar = new JButton("Guardar");
-        btnGuardar.addActionListener(e -> guardarEntidad());
-        JButton btnEliminar = new JButton("Eliminar");
-        btnEliminar.addActionListener(e -> eliminarEntidad());
-        JButton btnRefrescar = new JButton("Refrescar");
-        btnRefrescar.addActionListener(e -> cargarEntidades());
-        pnlBotones.add(btnNuevo);
-        pnlBotones.add(btnGuardar);
-        pnlBotones.add(btnEliminar);
-        pnlBotones.add(btnRefrescar);
-
-        JPanel pnlNorte = new JPanel(new BorderLayout());
-        pnlNorte.add(pnlForm, BorderLayout.CENTER);
-        pnlNorte.add(pnlBotones, BorderLayout.SOUTH);
-        add(pnlNorte, BorderLayout.NORTH);
-
-        String[] columnas = {"ID", "Código", "Nombre", "NIT", "Tasa E.A.", "Scoring Mín.", "Estado"};
-        modeloTabla = new DefaultTableModel(columnas, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
-        tblEntidades = new JTable(modeloTabla);
-        tblEntidades.setRowHeight(22);
-        tblEntidades.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        tblEntidades.getSelectionModel().addListSelectionListener(e -> {
-            if (!e.getValueIsAdjusting()) {
-                cargarSeleccionEnFormulario();
+        tblEntidades = ComponentesFX.crearTabla("ID", "Código", "Nombre", "NIT", "Tasa E.A.", "Scoring Mín.", "Estado");
+        tblEntidades.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+        tblEntidades.getSelectionModel().selectedItemProperty().addListener((obs, anterior, fila) -> {
+            if (fila != null) {
+                cargarSeleccionEnFormulario((Long) fila[0]);
             }
         });
-        JScrollPane scroll = new JScrollPane(tblEntidades);
-        scroll.setBorder(BorderFactory.createTitledBorder("Entidades registradas (seleccione una fila para editarla o eliminarla)"));
-        add(scroll, BorderLayout.CENTER);
+        TitledPane seccionTabla = ComponentesFX.crearSeccion(
+                "Entidades registradas (seleccione una fila para editarla o eliminarla)", tblEntidades);
+        seccionTabla.setMaxHeight(Double.MAX_VALUE);
+        BorderPane.setMargin(seccionTabla, new Insets(10, 0, 0, 0));
+        setCenter(seccionTabla);
 
         cargarEntidades();
     }
@@ -115,9 +87,9 @@ public class FinanciacionVista extends JPanel {
     private void cargarEntidades() {
         try {
             List<EntidadFinanciera> lista = servicio.listarEntidades();
-            modeloTabla.setRowCount(0);
+            tblEntidades.getItems().clear();
             for (EntidadFinanciera e : lista) {
-                modeloTabla.addRow(new Object[]{
+                tblEntidades.getItems().add(new Object[]{
                     e.getId(),
                     e.getCodigo(),
                     e.getNombre(),
@@ -133,12 +105,7 @@ public class FinanciacionVista extends JPanel {
         }
     }
 
-    private void cargarSeleccionEnFormulario() {
-        int fila = tblEntidades.getSelectedRow();
-        if (fila == -1) {
-            return;
-        }
-        Long id = (Long) modeloTabla.getValueAt(fila, 0);
+    private void cargarSeleccionEnFormulario(Long id) {
         try {
             servicio.buscarEntidad(id).ifPresent(e -> {
                 idSeleccionado = e.getId();
@@ -216,12 +183,12 @@ public class FinanciacionVista extends JPanel {
 
     private void limpiarFormulario() {
         idSeleccionado = null;
-        txtCodigo.setText("");
-        txtNombre.setText("");
-        txtNit.setText("");
-        txtTasaEa.setText("");
-        txtScoring.setText("");
+        txtCodigo.clear();
+        txtNombre.clear();
+        txtNit.clear();
+        txtTasaEa.clear();
+        txtScoring.clear();
         chkActivo.setSelected(true);
-        tblEntidades.clearSelection();
+        tblEntidades.getSelectionModel().clearSelection();
     }
 }
