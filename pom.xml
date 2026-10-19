@@ -52,7 +52,12 @@
             <artifactId>h2</artifactId>
             <version>${h2.version}</version>
         </dependency>
-
+        <!-- JavaFX (interfaz gráfica, SRS v2.1) -->
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-controls</artifactId>
+            <version>21.0.2</version>
+        </dependency>
         <!-- JUnit 5 para pruebas unitarias y de integración -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>

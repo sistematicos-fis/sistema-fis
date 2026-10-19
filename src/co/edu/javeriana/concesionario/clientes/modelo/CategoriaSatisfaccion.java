@@ -1,12 +1,23 @@
 package co.edu.javeriana.concesionario.clientes.modelo;
 
-/**
- * Rangos de satisfacción posventa (CU-05).
- */
 public enum CategoriaSatisfaccion {
-    MUY_INSATISFECHO,
-    INSATISFECHO,
-    NEUTRO,
-    SATISFECHO,
-    MUY_SATISFECHO
+
+    SATISFECHO("Satisfecho"),
+    NEUTRAL("Neutral"),
+    EN_RIESGO("En riesgo");
+
+    private final String etiqueta;
+
+    CategoriaSatisfaccion(String etiqueta) {
+        this.etiqueta = etiqueta;
+    }
+
+    public String getEtiqueta() {
+        return etiqueta;
+    }
+
+    @Override
+    public String toString() {
+        return etiqueta;
+    }
 }

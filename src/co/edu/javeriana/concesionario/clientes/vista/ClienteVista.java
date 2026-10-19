@@ -99,7 +99,7 @@ public class ClienteVista extends JPanel {
         pnlSur.add(btnRefrescar);
 
         JButton btnIndices = new JButton("Ver Índices de Satisfacción (CU-05)");
-        btnIndices.addActionListener(e -> new IndiceSatisfaccionVista(this).mostrarDialogo());
+        btnIndices.addActionListener(e -> IndiceSatisfaccionVista.abrir());
         pnlSur.add(btnIndices);
 
         add(pnlSur, BorderLayout.SOUTH);
