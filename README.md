@@ -115,6 +115,22 @@ Cada área funcional sigue estrictamente el siguiente patrón modular:
 ```
 O directamente ejecutando la clase principal `co.edu.javeriana.concesionario.Main` desde IntelliJ IDEA o Eclipse.
 
+### Consola de H2 (ver las tablas mientras la aplicación está abierta):
+La conexión usa `AUTO_SERVER=TRUE`, así que la consola puede abrir la misma base de datos sin cerrar la aplicación.
+
+1. Con la aplicación abierta, en otra terminal ejecutar:
+```bash
+java -cp ~/.m2/repository/com/h2database/h2/2.3.232/h2-2.3.232.jar org.h2.tools.Console
+```
+En Windows la ruta es `%USERPROFILE%\.m2\repository\com\h2database\h2\2.3.232\h2-2.3.232.jar`.
+
+2. En la página que se abre en el navegador:
+   - **JDBC URL**: `jdbc:h2:<ruta del proyecto>/data/concesionario_db;AUTO_SERVER=TRUE` (por ejemplo `jdbc:h2:C:/Users/usuario/sistema-fis/data/concesionario_db;AUTO_SERVER=TRUE`)
+   - **User Name**: `sa`
+   - **Password**: vacío
+
+3. Después de cada operación en la aplicación, ejecutar la consulta de la tabla (por ejemplo `SELECT * FROM ENTIDADES_FINANCIERAS;`) para ver el registro insertado, actualizado o eliminado.
+
 ### Usuarios de prueba:
 | Usuario | Contraseña | Rol | Pestañas |
 |---|---|---|---|

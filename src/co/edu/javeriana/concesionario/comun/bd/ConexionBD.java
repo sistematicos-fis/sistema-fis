@@ -23,7 +23,7 @@ public final class ConexionBD {
     private static final Logger LOGGER = Logger.getLogger(ConexionBD.class.getName());
     
     // URL por defecto para base de datos H2 embebida persistente
-    private static final String DEFAULT_URL_FILE = "jdbc:h2:./data/concesionario_db;DB_CLOSE_DELAY=-1";
+    private static final String DEFAULT_URL_FILE = "jdbc:h2:./data/concesionario_db;DB_CLOSE_DELAY=-1;AUTO_SERVER=TRUE";
     private static final String DEFAULT_URL_MEM = "jdbc:h2:mem:concesionario_db;DB_CLOSE_DELAY=-1";
     private static final String USER = "sa";
     private static final String PASSWORD = "";
