@@ -112,9 +112,14 @@ public class BodegaServicioTest {
     public void testReducirCapacidadPorDebajoDeOcupacionEsRechazada() throws Exception {
         Bodega b = servicio.registrarBodega(nuevaBodega(5));
         registrarVehiculoEn(b.getId());
+        registrarVehiculoEn(b.getId());
 
-        b.setCapacidadVehiculos(0);
-        assertThrows(ReglaNegocioException.class, () -> servicio.actualizarBodega(b));
+        // Capacidad 1 es válida por sí sola (RN-07-04), pero queda por debajo de
+        // los 2 vehículos ya almacenados, así que debe fallar por RN-07-05.
+        b.setCapacidadVehiculos(1);
+        ReglaNegocioException ex = assertThrows(ReglaNegocioException.class,
+                () -> servicio.actualizarBodega(b));
+        assertTrue(ex.getMessage().contains("2"), "El mensaje debe indicar la ocupación actual");
     }
 
     @Test
