@@ -1,142 +1,101 @@
-# Concesionario Integrado - Sistema para Venta y Alquiler de Vehículos y Motocicletas
+# Concesionario Integrado
 
-**Pontificia Universidad Javeriana**  
-**Facultad de Ingeniería - Departamento de Ingeniería de Sistemas**  
-**Asignatura:** Fundamentos de Ingeniería de Software (FIS)  
-**Profesor:** Dr. Jaime Pavlich-Mariscal  
-**Equipo de Proyecto:** Grupo Sistemáticos  
+Sistema de escritorio para la venta y el alquiler de vehículos y motocicletas. Proyecto de Fundamentos de Ingeniería de Software, Pontificia Universidad Javeriana.
 
----
+- Profesor: Jaime Andrés Pavlich Mariscal, Ph.D.
+- Grupo Sistemáticos: Andrés Alquerque, Juan Pablo León, Jerónimo Martin, Samuel Borras y Samuel Montaña
 
-## 1. Estructura Oficial del Proyecto
+Hecho en Java 21 con JavaFX para la interfaz, H2 como base de datos (por JDBC) y JUnit 5 para las pruebas.
 
-El proyecto está diseñado bajo una arquitectura modular desacoplada en cuatro capas (**Modelo, Persistencia, Lógica y Vista**), asegurando la separación de responsabilidades y facilitando el trabajo concurrente del equipo sin conflictos de fusión (*merge conflicts*).
+## Cómo está organizado
+
+El código está dividido en cinco áreas, una por integrante, y un paquete `comun` con lo que comparten todas. Cada área tiene las mismas cuatro capas:
+
+- `modelo/`: las clases de datos.
+- `persistencia/`: los DAO, que hacen las consultas SQL con JDBC.
+- `logica/`: las reglas de negocio.
+- `vista/`: las pantallas en JavaFX.
 
 ```text
-concesionario/
-├── README.md               # Explica toda la estructura y guía de desarrollo
-├── .gitignore              # Reglas de exclusión para Maven, IDEs y base de datos local H2
-├── pom.xml                 # Configuración de compilación Maven, dependencias H2 y JUnit 5
-├── mvnw / mvnw.cmd         # Maven Wrapper para compilación sin requerir Maven global
-├── docs/                   # Documentación oficial (PMP, SRS, SDD en formato .docx / .odt)
-│   ├── PMP/
-│   ├── SRS/
-│   └── SDD/
-├── db/                     # Un script SQL por área funcional para inicialización de H2
-│   ├── 00_init_general.sql # Tablas transversales: usuarios, roles y autenticación
-│   ├── 01_clientes.sql     # Clientes, categorías comerciales, encuestas y PQRS
-│   ├── 02_inventario.sql   # Catálogo de vehículos, motocicletas y bodegas
-│   ├── 03_financiacion.sql # Entidades financieras aliadas (CU-11)
-│   ├── 04_alquiler.sql     # Puntos de entrega, sedes, tarifas y contratos de renta
-│   └── 07_legal.sql        # Trámites de traspaso, RUNT y pólizas de seguro
-├── test/                   # Pruebas automatizadas JUnit 5 (espejo exacto del árbol src/)
-│   └── co/edu/javeriana/concesionario/
-│       ├── comun/          # Pruebas de conexión a H2
-│       ├── clientes/       # Pruebas unitarias de clientes y CSAT
-│       ├── inventario/     # Pruebas de stock y depreciación
-│       ├── financiacion/   # Pruebas del CRUD de entidades financieras (CU-11)
-│       ├── alquiler/       # Pruebas de gestión de sedes y puntos de entrega
-│       └── legal/          # Pruebas de emisión con simulador de aseguradora
-└── src/co/edu/javeriana/concesionario/
-    ├── Main.java           # Punto de entrada que arranca la aplicación de escritorio JavaFX
-    │
-    ├── comun/              # Componentes compartidos por 2 o más áreas
-    │   ├── bd/             # ConexionBD.java (Única conexión autorizada a H2 con JDBC)
-    │   ├── simuladores/    # Simuladores internos obligatorios (Prohibidas conexiones reales)
-    │   │   └── SimuladorAseguradora.java (CU-34)
-    │   ├── seguridad/      # Usuario, Rol, UsuarioDAO y AutenticacionServicio (RF-26, RF-27)
-    │   ├── vista/          # VentanaLogin.java y VentanaPrincipal.java (navegación JavaFX)
-    │   └── util/           # Validaciones, formateadores de moneda/fecha y diálogos
-    │
-    ├── clientes/           # CU-01 a CU-05 · Clientes y PQRS ......... Andrés Alquerque
-    ├── inventario/         # CU-06 a CU-10 · Inventario y Bodega ...... Juan Pablo León
-    ├── financiacion/       # CU-11 a CU-15 · Financiación ............ Jerónimo Martin
-    ├── alquiler/           # CU-16 a CU-20 · Alquiler ................ Samuel Borras
-    └── legal/              # CU-21 a CU-25 · Documentación Legal ...... Samuel Montaña
+sistema-fis/
+├── pom.xml
+├── mvnw, mvnw.cmd
+├── db/                  scripts SQL que crean las tablas al arrancar
+├── docs/
+├── src/co/edu/javeriana/concesionario/
+│   ├── Main.java
+│   ├── comun/           conexión a H2, login y roles, utilidades, ventanas principales
+│   ├── clientes/
+│   ├── inventario/
+│   ├── financiacion/
+│   ├── alquiler/
+│   └── legal/
+└── test/                pruebas JUnit, con la misma estructura de paquetes que src/
 ```
 
----
+Hay un script SQL por área en `db/`:
 
-## 2. Asignación de Integrantes y Casos de Uso (25 Casos de Uso - 5 Integrantes)
+| Script | Tablas |
+|---|---|
+| `00_init_general.sql` | usuarios |
+| `01_clientes.sql` | clientes, pqrs, encuestas y alertas de satisfacción |
+| `02_inventario.sql` | bodegas, vehículos y movimientos de inventario |
+| `03_financiacion.sql` | entidades financieras |
+| `04_alquiler.sql` | puntos de entrega, tarifas y contratos de alquiler |
+| `07_legal.sql` | aseguradoras, pólizas, actas de traspaso y revisiones técnico-mecánicas |
 
-Cada integrante del equipo es dueño de **5 casos de uso**, incluyendo al menos **1 caso de uso no trivial (no CRUD)**, cumpliendo con la regla de grupos de 5 a 7 integrantes:
+Cada área tiene su propio README con el detalle de sus casos de uso.
 
-| Integrante | Área Funcional | Casos de Uso Asignados | Caso No Trivial (No CRUD) |
+## Integrantes y casos de uso
+
+| Integrante | Área | Casos de uso | Caso no CRUD |
 |---|---|---|---|
-| **Andrés Alquerque** | Clientes y PQRS | **CU-01 a CU-05** | **CU-05**: Calcular índice combinado de satisfacción del cliente |
-| **Juan Pablo León** | Inventario y Bodega | **CU-06 a CU-10** | **CU-10**: Realizar control y conciliación de inventario |
-| **Jerónimo Martin** | Financiación | **CU-11 a CU-15** | **CU-15**: Simular, Evaluar y Formalizar Crédito (Amortización) |
-| **Samuel Borras** | Alquiler | **CU-16 a CU-20** | **CU-20**: Realizar alquiler de un vehículo |
-| **Samuel Montaña** | Documentación Legal | **CU-21 a CU-25** | **CU-24 / CU-25**: Validar y renovar SOAT del vehículo. Verificar vigencia de revisión técnico-mecánica antes de alquiler o venta
- |
+| Andrés Alquerque | Clientes y PQRS | CU-01 a CU-05 | CU-05 Calcular índice combinado de satisfacción del cliente |
+| Juan Pablo León | Inventario y bodega | CU-06 a CU-10 | CU-10 Realizar control y conciliación de inventario |
+| Jerónimo Martin | Financiación | CU-11 a CU-15 | CU-15 Simular, evaluar y formalizar crédito |
+| Samuel Borras | Alquiler | CU-16 a CU-20 | CU-20 Realizar alquiler de un vehículo |
+| Samuel Montaña | Documentación legal | CU-21 a CU-25 | CU-24 Validar y renovar SOAT, CU-25 Verificar vigencia de la revisión técnico-mecánica |
 
----
+## Restricciones del curso
 
-## 3. Arquitectura Interna de Cada Área Funcional
+- Aplicación de escritorio en Java con interfaz JavaFX. Nada web.
+- Los datos se guardan en H2 por JDBC, no en archivos de texto.
+- No hay conexiones reales con bancos ni aseguradoras. Para eso está `comun/simuladores/SimuladorAseguradora.java`.
+- Inicio de sesión con usuario y contraseña (RF-26) y pestañas según el rol (RF-27). Las contraseñas se guardan como hash SHA-256.
+- Cada cambio entra por una rama `feature/...` y un pull request.
+- Los documentos (PMP, SRS, SDD) van en Word o LibreOffice y los diagramas en Lucidchart.
 
-Cada área funcional sigue estrictamente el siguiente patrón modular:
+## Cómo correrlo
 
-```text
-<area>/
-├── README.md               # Detalle de los 5 casos de uso y sus clases asociadas
-├── modelo/                 # Entidades y objetos de valor (Datos)
-├── persistencia/           # DAOs con JDBC puro sobre el motor relacional H2
-├── logica/                 # Reglas de negocio y algoritmos de cálculo (No CRUD)
-└── vista/                  # Formularios, diálogos y pantallas en JavaFX
+Se necesita el JDK 21 o una versión más nueva. No hace falta instalar Maven: `./mvnw` lo descarga la primera vez, junto con H2, JavaFX y JUnit, así que esa primera vez se necesita internet.
+
+Los comandos se corren desde la carpeta raíz del proyecto, porque la aplicación busca los scripts en `db/` y guarda la base en `data/` a partir de ahí.
+
+```bash
+git clone https://github.com/sistematicos-fis/sistema-fis.git
+cd sistema-fis
+chmod +x mvnw          # solo en macOS o Linux, si bajaste el ZIP
 ```
 
----
+Pruebas:
 
-## 4. Cumplimiento de Restricciones Técnicas y del Curso
-
-- **Tipo de Aplicación**: Estrictamente de escritorio Java. Prohibido desarrollo web o híbrido.
-- **GUI**: Exclusivamente implementada con **JavaFX**. Prohibido HTML/CSS.
-- **Base de Datos y Persistencia**: Motor relacional embebido **H2 Database** accedido exclusivamente mediante **JDBC** y sentencias SQL estándar. *Prohibido el uso de archivos planos de texto.*
-- **Simulación de Servicios Externos**: Prohibidas las conexiones externas reales con bancos o aseguradoras. Se implementan simuladores internos en `comun.simuladores` (`SimuladorAseguradora`).
-- **Seguridad**: Inicio de sesión con usuario y contraseña (RF-26). Cada rol del SRS solo ve las pestañas de su área (RF-27). Las contraseñas se guardan como SHA-256 en la tabla `usuarios`.
-- **Control de Versiones**: Flujo con ramas `feature/CU-XX-descripcion` e integración obligatoria vía Pull Requests (PR) aprobados por pares. Push directo a `main` prohibido.
-- **Documentación**: Todos los entregables (PMP, SRS, SDD) se redactan exclusivamente en formatos **MS Word (`.docx`)** o **LibreOffice (`.odt`)**. Diagramas UML diseñados con herramientas visuales (draw.io, Enterprise Architect).
-
----
-
-## 5. Instrucciones de Compilación y Ejecución
-
-### Requisitos:
-- **JDK 21 o superior** (el `pom.xml` compila con `release 21`)
-- **Apache Maven 3.8+** (o usar el wrapper `./mvnw`, que lo descarga solo)
-- Conexión a internet la primera vez, para descargar H2, JavaFX y JUnit
-
-Todos los comandos se ejecutan desde la carpeta raíz del proyecto. La aplicación busca los scripts en `db/` y crea la base de datos en `data/` a partir de la carpeta desde donde se ejecuta.
-
-### Ejecutar Pruebas Automatizadas:
 ```bash
 ./mvnw clean test
 ```
 
-### Ejecutar la Aplicación:
+Deben pasar las 121. Para correr solo una clase: `./mvnw test -Dtest=FinanciacionServicioTest`.
+
+Aplicación:
+
 ```bash
 ./mvnw clean compile exec:java
 ```
-O directamente ejecutando la clase principal `co.edu.javeriana.concesionario.Main` desde IntelliJ IDEA o Eclipse.
 
-### Consola de H2 (ver las tablas mientras la aplicación está abierta):
-La conexión usa `AUTO_SERVER=TRUE`, así que la consola puede abrir la misma base de datos sin cerrar la aplicación.
+También se puede correr la clase `co.edu.javeriana.concesionario.Main` desde IntelliJ o Eclipse.
 
-1. Con la aplicación abierta, en otra terminal ejecutar:
-```bash
-java -cp ~/.m2/repository/com/h2database/h2/2.3.232/h2-2.3.232.jar org.h2.tools.Console
-```
-En Windows la ruta es `%USERPROFILE%\.m2\repository\com\h2database\h2\2.3.232\h2-2.3.232.jar`.
+### Usuarios de prueba
 
-2. En la página que se abre en el navegador:
-   - **JDBC URL**: `jdbc:h2:<ruta del proyecto>/data/concesionario_db;AUTO_SERVER=TRUE` (por ejemplo `jdbc:h2:C:/Users/usuario/sistema-fis/data/concesionario_db;AUTO_SERVER=TRUE`)
-   - **User Name**: `sa`
-   - **Password**: vacío
-
-3. Después de cada operación en la aplicación, ejecutar la consulta de la tabla (por ejemplo `SELECT * FROM ENTIDADES_FINANCIERAS;`) para ver el registro insertado, actualizado o eliminado.
-
-### Usuarios de prueba:
-| Usuario | Contraseña | Rol | Pestañas |
+| Usuario | Contraseña | Rol | Pestañas que ve |
 |---|---|---|---|
 | admin | admin123 | Administrador | Todas |
 | asesor | asesor123 | Asesor Comercial | Clientes, Financiación, Alquiler |
@@ -145,31 +104,43 @@ En Windows la ruta es `%USERPROFILE%\.m2\repository\com\h2database\h2\2.3.232\h2
 | bodega | bodega123 | Administrador de Bodega | Inventario |
 | legal | legal123 | Analista de Documentación Legal | Documentación Legal |
 
----
+### Ver la base de datos con la consola de H2
 
-## 6. Administración
+La URL de la conexión tiene `AUTO_SERVER=TRUE`, así que la consola puede abrir la base mientras la aplicación sigue abierta.
 
-### Dónde quedan los datos
-La base de datos es el archivo `data/concesionario_db.mv.db`, dentro de la carpeta del proyecto. Git no lo sube al repositorio (`.gitignore`).
+Con la aplicación corriendo, en otra terminal y desde la raíz del proyecto:
 
-### Crear las tablas y los datos iniciales
-Al arrancar, `ConexionBD.inicializarBaseDatos()` ejecuta los scripts de `db/` en orden (00 al 07). Usan `CREATE TABLE IF NOT EXISTS` y `MERGE`, así que se pueden ejecutar varias veces sin duplicar datos.
+```bash
+java -cp ~/.m2/repository/com/h2database/h2/2.3.232/h2-2.3.232.jar org.h2.tools.Console
+```
 
-### Reiniciar la base de datos
-1. Cerrar la aplicación y la consola de H2.
-2. Borrar la carpeta `data/`.
-3. Abrir la aplicación de nuevo: se crea una base vacía con los datos semilla.
+En Windows el jar está en `%USERPROFILE%\.m2\repository\com\h2database\h2\2.3.232\h2-2.3.232.jar`.
 
-### Copia de seguridad
-Con la aplicación cerrada, copiar la carpeta `data/`. Para restaurarla, se reemplaza la carpeta.
+En la página que se abre:
 
-### Agregar o desactivar usuarios
-No hay pantalla de usuarios. Desde la consola de H2:
+- JDBC URL: `jdbc:h2:<ruta del proyecto>/data/concesionario_db;AUTO_SERVER=TRUE`. En macOS o Linux, `echo "jdbc:h2:$(pwd)/data/concesionario_db;AUTO_SERVER=TRUE"` la imprime lista para copiar.
+- User Name: `sa`
+- Password: vacío
+
+Después de guardar, editar o borrar algo en la aplicación, se vuelve a consultar la tabla, por ejemplo `SELECT * FROM ENTIDADES_FINANCIERAS;`, y el cambio aparece.
+
+## Administración
+
+**Dónde están los datos.** En `data/concesionario_db.mv.db`, dentro de la carpeta del proyecto. Esa carpeta está en el `.gitignore`, así que cada quien tiene su propia base.
+
+**Cómo se crean las tablas.** Al arrancar, `ConexionBD.inicializarBaseDatos()` corre los scripts de `db/` en orden. Usan `CREATE TABLE IF NOT EXISTS` y `MERGE`, por lo que se pueden ejecutar muchas veces sin duplicar datos.
+
+**Empezar de cero.** Cerrar la aplicación y la consola, borrar la carpeta `data/` y volver a abrir la aplicación. La base se crea otra vez con los datos iniciales.
+
+**Copia de seguridad.** Con la aplicación cerrada, copiar la carpeta `data/`. Para restaurar, se pone esa copia en su lugar.
+
+**Usuarios.** No hay pantalla para administrarlos; se hace desde la consola de H2:
+
 ```sql
--- La contraseña se guarda como SHA-256 en hexadecimal
 INSERT INTO usuarios (username, password_hash, nombre_completo, rol, activo)
 VALUES ('nuevo', LOWER(RAWTOHEX(HASH('SHA-256', STRINGTOUTF8('clave123')))), 'Nombre Apellido', 'ASESOR_COMERCIAL', TRUE);
 
 UPDATE usuarios SET activo = FALSE WHERE username = 'nuevo';
 ```
-Los roles válidos son `ADMINISTRADOR`, `ASESOR_COMERCIAL`, `ANALISTA_CREDITO`, `ANALISTA_SERVICIO_CLIENTE`, `ADMINISTRADOR_BODEGA` y `ANALISTA_DOCUMENTACION_LEGAL`.
+
+Roles válidos: `ADMINISTRADOR`, `ASESOR_COMERCIAL`, `ANALISTA_CREDITO`, `ANALISTA_SERVICIO_CLIENTE`, `ADMINISTRADOR_BODEGA` y `ANALISTA_DOCUMENTACION_LEGAL`.
