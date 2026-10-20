@@ -16,13 +16,15 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import javafx.scene.layout.BorderPane;
 
 /**
  * Pantalla JavaFX para la gestión del inventario y catálogo de vehículos (CU-06 a CU-10).
  * Responsable: Juan Pablo León
  */
-public class InventarioVista extends BorderPane {
+public class InventarioVista extends TabPane {
 
     private final InventarioServicio servicio;
     private final TextField txtVin;
@@ -36,8 +38,13 @@ public class InventarioVista extends BorderPane {
     private final TableView<Object[]> tblVehiculos;
 
     public InventarioVista() {
-        this.servicio = new InventarioServicio();
-        setPadding(new Insets(15));
+        this(new InventarioServicio());
+    }
+
+    public InventarioVista(InventarioServicio servicio) {
+        this.servicio = servicio;
+        BorderPane panelVehiculos = new BorderPane();
+        panelVehiculos.setPadding(new Insets(15));
 
         // Formulario
         txtVin = new TextField();
@@ -54,7 +61,7 @@ public class InventarioVista extends BorderPane {
         Button btnRegistrar = new Button("Registrar en Stock");
         btnRegistrar.setOnAction(e -> registrarVehiculo());
 
-        setTop(ComponentesFX.crearSeccion("Nuevo Vehículo / Motocicleta (CU-06)", ComponentesFX.crearFormulario(6,
+        panelVehiculos.setTop(ComponentesFX.crearSeccion("Nuevo Vehículo / Motocicleta (CU-06)", ComponentesFX.crearFormulario(6,
                 new Label("VIN:"), txtVin,
                 new Label("Placa:"), txtPlaca,
                 new Label("Tipo:"), cmbTipo,
@@ -68,14 +75,18 @@ public class InventarioVista extends BorderPane {
         // Tabla Central
         tblVehiculos = ComponentesFX.crearTabla("ID", "VIN", "Placa", "Tipo", "Marca", "Línea", "Año", "Color", "Precio", "Estado");
         BorderPane.setMargin(tblVehiculos, new Insets(10, 0, 0, 0));
-        setCenter(tblVehiculos);
+        panelVehiculos.setCenter(tblVehiculos);
 
         // Barra Inferior
         Button btnRefrescar = new Button("Actualizar Lista");
         btnRefrescar.setOnAction(e -> cargarVehiculos());
-        setBottom(ComponentesFX.crearBarraBotones(Pos.CENTER_RIGHT, btnRefrescar));
+        panelVehiculos.setBottom(ComponentesFX.crearBarraBotones(Pos.CENTER_RIGHT, btnRefrescar));
 
         cargarVehiculos();
+
+        setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
+        getTabs().add(new Tab("Vehículos", panelVehiculos));
+        getTabs().add(new Tab("Bodegas", new BodegaVista(servicio)));
     }
 
     private void registrarVehiculo() {

@@ -8,6 +8,9 @@ import co.edu.javeriana.concesionario.comun.util.MensajeUtil;
 import co.edu.javeriana.concesionario.financiacion.logica.FinanciacionServicio;
 import co.edu.javeriana.concesionario.financiacion.persistencia.EntidadFinancieraDAO;
 import co.edu.javeriana.concesionario.financiacion.vista.FinanciacionVista;
+import co.edu.javeriana.concesionario.inventario.logica.InventarioServicio;
+import co.edu.javeriana.concesionario.inventario.persistencia.BodegaDAO;
+import co.edu.javeriana.concesionario.inventario.persistencia.VehiculoDAO;
 import co.edu.javeriana.concesionario.inventario.vista.InventarioVista;
 import co.edu.javeriana.concesionario.legal.vista.LegalVista;
 
@@ -72,7 +75,7 @@ public class VentanaPrincipal extends Stage {
             case CLIENTES:
                 return new ClienteVista();
             case INVENTARIO:
-                return new InventarioVista();
+                return new InventarioVista(new InventarioServicio(new VehiculoDAO(), new BodegaDAO()));
             case FINANCIACION:
                 return new FinanciacionVista(new FinanciacionServicio(new EntidadFinancieraDAO()));
             case ALQUILER:
