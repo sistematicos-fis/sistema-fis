@@ -9,6 +9,8 @@ import co.edu.javeriana.concesionario.inventario.modelo.Vehiculo;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -25,6 +27,8 @@ import javafx.scene.layout.BorderPane;
  * Responsable: Juan Pablo León
  */
 public class InventarioVista extends TabPane {
+
+    private static final Logger LOGGER = Logger.getLogger(InventarioVista.class.getName());
 
     private final InventarioServicio servicio;
     private final TextField txtVin;
@@ -129,7 +133,11 @@ public class InventarioVista extends TabPane {
                     v.getEstado()
                 });
             }
-        } catch (Exception ignored) {
+        } catch (Exception ex) {
+            // Se llama desde el constructor, antes de que exista la ventana: no se puede
+            // abrir un diálogo modal aquí, así que el error se registra y se avisa en la tabla.
+            LOGGER.log(Level.SEVERE, "No se pudo cargar el inventario", ex);
+            tblVehiculos.setPlaceholder(new Label("No se pudo cargar el inventario: " + ex.getMessage()));
         }
     }
 }

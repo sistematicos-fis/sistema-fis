@@ -7,6 +7,8 @@ import co.edu.javeriana.concesionario.inventario.logica.InventarioServicio;
 import co.edu.javeriana.concesionario.inventario.modelo.Bodega;
 
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -24,6 +26,8 @@ import javafx.scene.layout.BorderPane;
  * Responsable: Juan Pablo León
  */
 public class BodegaVista extends BorderPane {
+
+    private static final Logger LOGGER = Logger.getLogger(BodegaVista.class.getName());
 
     private final InventarioServicio servicio;
 
@@ -92,7 +96,10 @@ public class BodegaVista extends BorderPane {
             }
             limpiarFormulario();
         } catch (Exception ex) {
-            MensajeUtil.mostrarError(this, "No se pudieron cargar las bodegas: " + ex.getMessage(), "Error");
+            // Se llama desde el constructor, antes de que exista la ventana: no se puede
+            // abrir un diálogo modal aquí, así que el error se registra y se avisa en la tabla.
+            LOGGER.log(Level.SEVERE, "No se pudieron cargar las bodegas", ex);
+            tblBodegas.setPlaceholder(new Label("No se pudieron cargar las bodegas: " + ex.getMessage()));
         }
     }
 
