@@ -20,8 +20,8 @@ public class LegalDAO {
 
     public PolizaSeguro guardarPoliza(PolizaSeguro p) throws SQLException {
         String sql = "INSERT INTO polizas_seguro (numero_poliza, aseguradora_id, vehiculo_id, cliente_id, " +
-                     "tipo_poliza, valor_prima, valor_cobertura, fecha_emision, fecha_vencimiento, estado, " +
-                     "codigo_aprobacion_simulada) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                "tipo_poliza, valor_prima, valor_cobertura, fecha_emision, fecha_vencimiento, estado, " +
+                "codigo_aprobacion_simulada) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = ConexionBD.obtenerConexion();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setString(1, p.getNumeroPoliza());

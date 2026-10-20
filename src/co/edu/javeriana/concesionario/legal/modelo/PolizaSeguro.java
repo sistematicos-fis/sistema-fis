@@ -4,8 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 /**
- * Entidad que representa una póliza de seguro automotriz emitida (CU-34).
- * Responsable: Samuel Montaña
+ * Entidad que representa una póliza de seguro automotriz emitida.
  */
 public class PolizaSeguro {
     private Long id;

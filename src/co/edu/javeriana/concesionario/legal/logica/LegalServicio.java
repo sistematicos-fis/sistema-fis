@@ -10,10 +10,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 /**
- * Servicio de lógica de negocio para Documentación Legal y Pólizas (CU-31 a CU-35).
- * Invoca el Simulador de Aseguradora (CU-34).
- * 
- * Responsable: Samuel Montaña
+ * Servicio de lógica de negocio para Documentación Legal y Pólizas.
  */
 public class LegalServicio {
 
@@ -31,7 +28,7 @@ public class LegalServicio {
      * Emite una póliza conectando con el simulador interno de aseguradora (CU-34).
      */
     public PolizaSeguro emitirPolizaConSimulador(Long aseguradoraId, Long vehiculoId, Long clienteId,
-                                                String vinVehiculo, BigDecimal valorComercial, String tipoPoliza) throws SQLException {
+                                                 String vinVehiculo, BigDecimal valorComercial, String tipoPoliza) throws SQLException {
         ValidadorUtil.validarRequerido(vinVehiculo, "VIN");
         ValidadorUtil.validarMontoPositivo(valorComercial, "Valor Comercial");
 
