@@ -63,11 +63,12 @@ Cada integrante del equipo es dueño de **5 casos de uso**, incluyendo al menos 
 
 | Integrante | Área Funcional | Casos de Uso Asignados | Caso No Trivial (No CRUD) |
 |---|---|---|---|
-| **Andrés Alquerque** | Clientes y PQRS | **CU-01 a CU-05** | **CU-05**: Cálculo Ponderado del Índice de Satisfacción (CSAT / NPS) |
-| **Juan Pablo León** | Inventario y Bodega | **CU-06 a CU-10** | **CU-10**: Valoración de Inventario y Depreciación Anual Comercial |
+| **Andrés Alquerque** | Clientes y PQRS | **CU-01 a CU-05** | **CU-05**: Calcular índice combinado de satisfacción del cliente |
+| **Juan Pablo León** | Inventario y Bodega | **CU-06 a CU-10** | **CU-10**: Realizar control y conciliación de inventario |
 | **Jerónimo Martin** | Financiación | **CU-11 a CU-15** | **CU-15**: Simular, Evaluar y Formalizar Crédito (Amortización) |
-| **Samuel Borras** | Alquiler | **CU-16 a CU-20** | **CU-19**: Liquidación de Alquiler con Penalidades por Retraso/Combustible |
-| **Samuel Montaña** | Documentación Legal | **CU-21 a CU-25** | **CU-24 / CU-25**: Cotización y Emisión con Simulador Interno de Aseguradora |
+| **Samuel Borras** | Alquiler | **CU-16 a CU-20** | **CU-20**: Realizar alquiler de un vehículo |
+| **Samuel Montaña** | Documentación Legal | **CU-21 a CU-25** | **CU-24 / CU-25**: Validar y renovar SOAT del vehículo. Verificar vigencia de revisión técnico-mecánica antes de alquiler o venta
+ |
 
 ---
 
