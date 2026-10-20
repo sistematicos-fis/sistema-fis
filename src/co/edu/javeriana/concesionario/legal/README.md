@@ -5,16 +5,11 @@
 
 ## Casos de Uso del Área y Clases Principales
 
-| Caso de Uso | Nombre del Caso de Uso | Tipo | Clase Principal |
+| Caso de Uso | Nombre del Caso de Uso | Tipo | Descripción |
 |---|---|---|---|
-| **CU-21** | Gestionar matrículas de vehículos | CRUD | `persistencia.LegalDAO`<br>`logica.LegalServicio` |
-| **CU-22** | Gestionar aseguradoras | CRUD | `logica.LegalServicio` |
-| **CU-23** | Gestionar pólizas de seguro | CRUD | `modelo.Aseguradora`<br>`persistencia.LegalDAO` |
-| **CU-24** | Validar y renovar SOAT del vehículo | NO CRUD | `comun.simuladores.SimuladorAseguradora`<br>`persistencia.LegalDAO` |
-| **CU-25** | Verificar vigencia de revisión técnico-mecánica antes de alquiler o venta | NO CRUD | `vista.LegalVista` |
+| **CU-21** | Gestionar matrículas de vehículos | CRUD | Registra el estado de registro oficial e impuestos de los vehículos del concesionario. |
+| **CU-22** | Gestionar aseguradoras | CRUD | Administra convenios de pólizas obligatorias y de daños materiales contra terceros. |
+| **CU-23** | Gestionar pólizas de seguro | CRUD | Asocia seguros multirriesgo a las unidades de la flota activa de alquiler. |
+| **CU-24** | Validar y renovar SOAT del vehículo | NO CRUD | Verifica la vigencia del SOAT de un vehículo y gestiona su renovación, validando las condiciones necesarias ante la aseguradora. |
+| **CU-25** | Verificar vigencia de revisión técnico-mecánica antes de alquiler o venta | NO CRUD | Verifica que el vehículo tenga una revisión técnico-mecánica vigente antes de habilitarlo para una operación de venta o alquiler. |
 
-## Estructura de Paquetes:
-- `modelo/`: `PolizaSeguro`, `Aseguradora`.
-- `persistencia/`: `LegalDAO` (JDBC H2).
-- `logica/`: `LegalServicio`.
-- `vista/`: `LegalVista` (JavaFX).
