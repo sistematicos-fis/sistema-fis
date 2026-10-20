@@ -1,20 +1,15 @@
-# Módulo de Documentación Legal (CU-31 a CU-35)
+# Módulo de Documentación Legal (CU-21 a CU-25)
 
 - **Responsable:** Samuel Montaña
 - **Área Funcional:** Trámites de Traspaso, RUNT, Matrículas y Pólizas de Seguro (SOAT / Todo Riesgo)
 
 ## Casos de Uso del Área y Clases Principales
 
-| Caso de Uso | Nombre del Caso de Uso | Tipo | Clase Principal |
+| Caso de Uso | Nombre del Caso de Uso | Tipo | Descripción |
 |---|---|---|---|
-| **CU-31** | Radicar Acta de Traspaso y Venta | CRUD | `persistencia.LegalDAO`<br>`logica.LegalServicio` |
-| **CU-32** | Gestionar Registro Inicial de Matrícula (RUNT) | Trámite | `logica.LegalServicio` |
-| **CU-33** | Configurar Convenios con Aseguradoras | CRUD | `modelo.Aseguradora`<br>`persistencia.LegalDAO` |
-| **CU-34** | Cotizar y Emitir Póliza con Aseguradora (Simulador) | **No Trivial** / Integración Simulada | `comun.simuladores.SimuladorAseguradora`<br>`persistencia.LegalDAO` |
-| **CU-35** | Auditar y Archivar Expediente Legal de Vehículo | Auditoría / Cierre | `vista.LegalVista` |
+| **CU-21** | Gestionar matrículas de vehículos | CRUD | Registra el estado de registro oficial e impuestos de los vehículos del concesionario. |
+| **CU-22** | Gestionar aseguradoras | CRUD | Administra convenios de pólizas obligatorias y de daños materiales contra terceros. |
+| **CU-23** | Gestionar pólizas de seguro | CRUD | Asocia seguros multirriesgo a las unidades de la flota activa de alquiler. |
+| **CU-24** | Validar y renovar SOAT del vehículo | NO CRUD | Verifica la vigencia del SOAT de un vehículo y gestiona su renovación, validando las condiciones necesarias ante la aseguradora. |
+| **CU-25** | Verificar vigencia de revisión técnico-mecánica antes de alquiler o venta | NO CRUD | Verifica que el vehículo tenga una revisión técnico-mecánica vigente antes de habilitarlo para una operación de venta o alquiler. |
 
-## Estructura de Paquetes:
-- `modelo/`: `PolizaSeguro`, `Aseguradora`.
-- `persistencia/`: `LegalDAO` (JDBC H2).
-- `logica/`: `LegalServicio`.
-- `vista/`: `LegalVista` (Java Swing).
