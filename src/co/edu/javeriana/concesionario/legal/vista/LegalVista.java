@@ -1,7 +1,10 @@
 package co.edu.javeriana.concesionario.legal.vista;
 
+import co.edu.javeriana.concesionario.legal.logica.AseguradoraServicio;
+import co.edu.javeriana.concesionario.legal.logica.RevisionTecnicoMecanicaServicio;
 import co.edu.javeriana.concesionario.legal.persistencia.AseguradoraDAO;
 
+import co.edu.javeriana.concesionario.legal.persistencia.RevisionTecnicoMecanicaDAO;
 import javafx.scene.Node;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
