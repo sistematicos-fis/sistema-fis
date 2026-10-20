@@ -9,6 +9,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
+/**
+ * Reglas de negocio del CU-11 (gestionar entidades financieras aliadas).
+ * Valida los datos antes de llegar a la base de datos y traduce los errores a mensajes para el usuario.
+ */
 public class FinanciacionServicio {
     private static final Pattern PATRON_NIT = Pattern.compile("^[0-9.]{6,15}-[0-9]$");
     private static final int LONGITUD_MAX_CODIGO = 20;
@@ -36,12 +40,22 @@ public class FinanciacionServicio {
         return entidadRepositorio.buscarPorId(id);
     }
 
+    /**
+     * Registra una entidad nueva. Normaliza el código a mayúsculas y rechaza código o NIT repetidos.
+     *
+     * @throws ReglaNegocioException si algún dato no cumple las reglas del CU-11
+     */
     public EntidadFinanciera registrarEntidad(EntidadFinanciera entidad) throws SQLException {
         validarDatos(entidad);
         validarCodigoYNitUnicos(entidad);
         return entidadRepositorio.guardar(entidad);
     }
 
+    /**
+     * Actualiza una entidad existente con las mismas validaciones del registro.
+     *
+     * @throws ReglaNegocioException si la entidad no existe o algún dato no es válido
+     */
     public void actualizarEntidad(EntidadFinanciera entidad) throws SQLException {
         if (entidad.getId() == null || entidadRepositorio.buscarPorId(entidad.getId()).isEmpty()) {
             throw new ReglaNegocioException("No se pudo actualizar: la entidad financiera seleccionada no existe. Seleccione una entidad de la tabla.");
@@ -51,6 +65,11 @@ public class FinanciacionServicio {
         entidadRepositorio.actualizar(entidad);
     }
 
+    /**
+     * Elimina la entidad. Si ya tiene registros asociados en otro módulo, sugiere marcarla como inactiva.
+     *
+     * @throws ReglaNegocioException si la entidad no existe o no se puede borrar
+     */
     public void eliminarEntidad(Long id) throws SQLException {
         if (id == null || entidadRepositorio.buscarPorId(id).isEmpty()) {
             throw new ReglaNegocioException("No se pudo eliminar: la entidad financiera seleccionada no existe.");

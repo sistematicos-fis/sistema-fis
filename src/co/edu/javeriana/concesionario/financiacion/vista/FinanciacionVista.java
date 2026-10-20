@@ -23,6 +23,10 @@ import javafx.scene.control.TitledPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 
+/**
+ * Pantalla del CU-11: formulario de la entidad, tabla con las registradas y botones
+ * Nuevo, Guardar, Eliminar y Refrescar. Las validaciones las hace el servicio.
+ */
 public class FinanciacionVista extends BorderPane {
     private final FinanciacionServicio servicio;
 
@@ -174,7 +178,7 @@ public class FinanciacionVista extends BorderPane {
         entidad.setCodigo(txtCodigo.getText());
         entidad.setNombre(txtNombre.getText());
         entidad.setNit(txtNit.getText());
-        BigDecimal tasaPorcentaje = new BigDecimal(txtTasaEa.getText().trim());
+        BigDecimal tasaPorcentaje = new BigDecimal(txtTasaEa.getText().trim().replace(',', '.'));
         entidad.setTasaBaseEa(tasaPorcentaje.divide(new BigDecimal("100"), 4, RoundingMode.HALF_UP));
         entidad.setScoringMinimo(Integer.parseInt(txtScoring.getText().trim()));
         entidad.setActivo(chkActivo.isSelected());

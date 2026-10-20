@@ -11,7 +11,7 @@ import java.util.Locale;
  */
 public final class FormatoUtil {
 
-    private static final Locale LOCALE_COLOMBIA = new Locale("es", "CO");
+    private static final Locale LOCALE_COLOMBIA = Locale.of("es", "CO");
     private static final NumberFormat FORMATO_MONEDA = NumberFormat.getCurrencyInstance(LOCALE_COLOMBIA);
     private static final DateTimeFormatter FORMATO_FECHA = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 

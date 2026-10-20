@@ -61,12 +61,12 @@ CREATE TABLE IF NOT EXISTS alertas_satisfaccion (
 );
 
 -- Datos semilla para pruebas
-MERGE INTO clientes (id, documento, tipo_documento, nombres, apellidos, email, telefono, ingresos_mensuales, categoria_comercial, asesor_id)
+MERGE INTO clientes (documento, tipo_documento, nombres, apellidos, email, telefono, ingresos_mensuales, categoria_comercial, asesor_id)
 KEY(documento)
 VALUES
-    (1, '1018456789', 'CC', 'Carlos', 'Gómez Pérez', 'carlos.gomez@mail.com', '3101234567', 6500000.00, 'PREFERENCIAL', 2),
-    (2, '1020987654', 'CC', 'María', 'Fernanda Ruiz', 'mf.ruiz@mail.com', '3209876543', 4200000.00, 'ESTANDAR', 2),
-    (3, '900123456', 'NIT', 'Transportes del Norte SAS', 'Empresa', 'contacto@transnorte.com', '6017894561', 25000000.00, 'CORPORATIVO', 2);
+    ('1018456789', 'CC', 'Carlos', 'Gómez Pérez', 'carlos.gomez@mail.com', '3101234567', 6500000.00, 'PREFERENCIAL', (SELECT id FROM usuarios WHERE username = 'asesor')),
+    ('1020987654', 'CC', 'María', 'Fernanda Ruiz', 'mf.ruiz@mail.com', '3209876543', 4200000.00, 'ESTANDAR', (SELECT id FROM usuarios WHERE username = 'asesor')),
+    ('900123456', 'NIT', 'Transportes del Norte SAS', 'Empresa', 'contacto@transnorte.com', '6017894561', 25000000.00, 'CORPORATIVO', (SELECT id FROM usuarios WHERE username = 'asesor'));
 
 -- Datos semilla CU-05
 
