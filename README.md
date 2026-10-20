@@ -101,8 +101,11 @@ Cada área funcional sigue estrictamente el siguiente patrón modular:
 ## 5. Instrucciones de Compilación y Ejecución
 
 ### Requisitos:
-- **JDK 17 o 21 LTS**
-- **Apache Maven 3.8+** (o usar el wrapper `./mvnw`)
+- **JDK 21 o superior** (el `pom.xml` compila con `release 21`)
+- **Apache Maven 3.8+** (o usar el wrapper `./mvnw`, que lo descarga solo)
+- Conexión a internet la primera vez, para descargar H2, JavaFX y JUnit
+
+Todos los comandos se ejecutan desde la carpeta raíz del proyecto. La aplicación busca los scripts en `db/` y crea la base de datos en `data/` a partir de la carpeta desde donde se ejecuta.
 
 ### Ejecutar Pruebas Automatizadas:
 ```bash
@@ -140,3 +143,32 @@ En Windows la ruta es `%USERPROFILE%\.m2\repository\com\h2database\h2\2.3.232\h2
 | servicio | servicio123 | Analista de Servicio al Cliente | Clientes |
 | bodega | bodega123 | Administrador de Bodega | Inventario |
 | legal | legal123 | Analista de Documentación Legal | Documentación Legal |
+
+---
+
+## 6. Administración
+
+### Dónde quedan los datos
+La base de datos es el archivo `data/concesionario_db.mv.db`, dentro de la carpeta del proyecto. Git no lo sube al repositorio (`.gitignore`).
+
+### Crear las tablas y los datos iniciales
+Al arrancar, `ConexionBD.inicializarBaseDatos()` ejecuta los scripts de `db/` en orden (00 al 07). Usan `CREATE TABLE IF NOT EXISTS` y `MERGE`, así que se pueden ejecutar varias veces sin duplicar datos.
+
+### Reiniciar la base de datos
+1. Cerrar la aplicación y la consola de H2.
+2. Borrar la carpeta `data/`.
+3. Abrir la aplicación de nuevo: se crea una base vacía con los datos semilla.
+
+### Copia de seguridad
+Con la aplicación cerrada, copiar la carpeta `data/`. Para restaurarla, se reemplaza la carpeta.
+
+### Agregar o desactivar usuarios
+No hay pantalla de usuarios. Desde la consola de H2:
+```sql
+-- La contraseña se guarda como SHA-256 en hexadecimal
+INSERT INTO usuarios (username, password_hash, nombre_completo, rol, activo)
+VALUES ('nuevo', LOWER(RAWTOHEX(HASH('SHA-256', STRINGTOUTF8('clave123')))), 'Nombre Apellido', 'ASESOR_COMERCIAL', TRUE);
+
+UPDATE usuarios SET activo = FALSE WHERE username = 'nuevo';
+```
+Los roles válidos son `ADMINISTRADOR`, `ASESOR_COMERCIAL`, `ANALISTA_CREDITO`, `ANALISTA_SERVICIO_CLIENTE`, `ADMINISTRADOR_BODEGA` y `ANALISTA_DOCUMENTACION_LEGAL`.

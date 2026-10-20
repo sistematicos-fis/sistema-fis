@@ -3,6 +3,10 @@ package co.edu.javeriana.concesionario.financiacion.modelo;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+/**
+ * Banco o entidad aliada con la que el concesionario ofrece crédito (CU-11).
+ * La tasa base se guarda como fracción: 0.1650 equivale a 16,5 % E.A.
+ */
 public class EntidadFinanciera {
     private Long id;
     private String codigo;

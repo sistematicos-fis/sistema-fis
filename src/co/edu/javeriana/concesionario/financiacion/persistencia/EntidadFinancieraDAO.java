@@ -12,6 +12,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Implementación JDBC del repositorio sobre H2. Todas las consultas usan PreparedStatement.
+ */
 public class EntidadFinancieraDAO implements EntidadFinancieraRepositorio {
     @Override
     public EntidadFinanciera guardar(EntidadFinanciera entidad) throws SQLException {
