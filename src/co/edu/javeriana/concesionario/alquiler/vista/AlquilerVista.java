@@ -2,7 +2,7 @@ package co.edu.javeriana.concesionario.alquiler.vista;
 
 import co.edu.javeriana.concesionario.alquiler.logica.PuntoEntregaService;
 import co.edu.javeriana.concesionario.alquiler.modelo.PuntoEntrega;
-import co.edu.javeriana.concesionario.alquiler.persistencia.InMemoryPuntoEntregaRepository;
+import co.edu.javeriana.concesionario.alquiler.persistencia.PuntoEntregaDAO;
 import co.edu.javeriana.concesionario.comun.util.MensajeUtil;
 import co.edu.javeriana.concesionario.comun.vista.ComponentesFX;
 
@@ -29,7 +29,7 @@ public class AlquilerVista extends BorderPane {
     private final TableView<Object[]> tblPuntos;
 
     public AlquilerVista() {
-        this.service = new PuntoEntregaService(new InMemoryPuntoEntregaRepository());
+        this.service = new PuntoEntregaService(new PuntoEntregaDAO());
         setPadding(new Insets(15));
 
         // Formulario
@@ -58,9 +58,6 @@ public class AlquilerVista extends BorderPane {
         btnDeshabilitar.setOnAction(e -> deshabilitarPunto());
         setBottom(ComponentesFX.crearBarraBotones(Pos.CENTER_RIGHT, btnDeshabilitar));
 
-        // Cargar sedes demo
-        service.registrarPunto("SEDE-01", "Sede Norte Autopista", "Auto Norte # 170-20", "Bogotá");
-        service.registrarPunto("SEDE-02", "Sede Aeropuerto El Dorado", "Avenida El Dorado # 103-09", "Bogotá");
         actualizarTabla();
     }
 
@@ -89,12 +86,22 @@ public class AlquilerVista extends BorderPane {
             return;
         }
         String id = (String) fila[0];
-        service.deshabilitarPunto(id);
-        actualizarTabla();
+        try {
+            service.deshabilitarPunto(id);
+            actualizarTabla();
+        } catch (Exception ex) {
+            MensajeUtil.mostrarError(this, ex.getMessage(), "Error al Deshabilitar Sede");
+        }
     }
 
     private void actualizarTabla() {
-        List<PuntoEntrega> lista = service.listarPuntosActivos();
+        List<PuntoEntrega> lista;
+        try {
+            lista = service.listarPuntosActivos();
+        } catch (Exception ex) {
+            tblPuntos.setPlaceholder(new Label("No se pudieron cargar los puntos de entrega: " + ex.getMessage()));
+            return;
+        }
         tblPuntos.getItems().clear();
         for (PuntoEntrega p : lista) {
             tblPuntos.getItems().add(new Object[]{
