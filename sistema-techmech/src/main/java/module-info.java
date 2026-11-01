@@ -5,4 +5,6 @@ module co.edu.javeriana.techmech.sistematechmech {
 
     opens co.edu.javeriana.techmech.sistematechmech to javafx.fxml;
     exports co.edu.javeriana.techmech.sistematechmech;
+
+    requires java.sql;
 }
