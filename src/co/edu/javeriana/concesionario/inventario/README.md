@@ -37,7 +37,7 @@ abre una incidencia que solo el Administrador de Bodega puede cerrar.
 | RN-10-04 | Solo un vehículo `DISPONIBLE` puede pasar a venta. |
 | RN-10-05 | Si el físico no coincide con el sistema se abre incidencia y la unidad pasa a `EN_VERIFICACION` (flujo alterno 4A). |
 | RN-10-06 | Con una incidencia abierta no se confirma nada hasta resolverla. |
-| RN-10-07 | La confirmación deja la unidad `RESERVADA` con un bloqueo vigente por 30 minutos. |
+| RN-10-07 | La confirmación deja la unidad `RESERVADA` con un bloqueo vigente por 30 minutos. El bloqueo es temporal: `liberarBloqueosVencidos()` devuelve a `DISPONIBLE` las unidades cuyo bloqueo expiró, y `liberarBloqueo()` permite soltarla antes. |
 | RN-10-08 | Toda verificación queda registrada, sea cual sea su resultado. |
 | RN-10-09 | El resultado, la incidencia y el cambio de estado se escriben en una sola transacción (RF-28). |
 

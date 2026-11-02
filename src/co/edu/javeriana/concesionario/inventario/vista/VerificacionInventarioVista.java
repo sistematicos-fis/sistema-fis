@@ -103,6 +103,8 @@ public class VerificacionInventarioVista extends BorderPane {
     private VBox construirPanelVerificacion() {
         Button btnVerificar = new Button("Verificar disponibilidad");
         btnVerificar.setOnAction(e -> verificar());
+        Button btnLiberar = new Button("Liberar bloqueo");
+        btnLiberar.setOnAction(e -> liberarBloqueo());
         Button btnRefrescar = new Button("Refrescar flota");
         btnRefrescar.setOnAction(e -> cargarVehiculos());
 
@@ -114,7 +116,8 @@ public class VerificacionInventarioVista extends BorderPane {
                                         new Label("Solicitado por:"), txtSolicitante),
                                 new Label("Último conteo físico:"), lblUltimoConteo,
                                 new Label("Resultado:"), lblVeredicto,
-                                ComponentesFX.crearBarraBotones(Pos.CENTER_LEFT, btnVerificar, btnRefrescar))));
+                                ComponentesFX.crearBarraBotones(Pos.CENTER_LEFT,
+                                        btnVerificar, btnLiberar, btnRefrescar))));
         panel.setPadding(new Insets(0, 0, 10, 0));
         return panel;
     }
@@ -189,6 +192,23 @@ public class VerificacionInventarioVista extends BorderPane {
         }
     }
 
+    private void liberarBloqueo() {
+        Vehiculo vehiculo = cmbVehiculo.getValue();
+        if (vehiculo == null) {
+            MensajeUtil.mostrarAdvertencia(this, "Seleccione el vehículo a liberar.", "CU-10");
+            return;
+        }
+        try {
+            servicio.liberarBloqueo(vehiculo.getId());
+            lblVeredicto.setText("Bloqueo liberado; la unidad vuelve a estar DISPONIBLE.");
+            MensajeUtil.mostrarInfo(this, "Bloqueo liberado.", "CU-10");
+            cargarVehiculos();
+            mostrarUltimoConteo();
+        } catch (Exception ex) {
+            MensajeUtil.mostrarError(this, "No se pudo liberar: " + ex.getMessage(), "Error");
+        }
+    }
+
     private void registrarConteo() {
         Vehiculo vehiculo = cmbVehiculo.getValue();
         if (vehiculo == null) {
@@ -231,6 +251,10 @@ public class VerificacionInventarioVista extends BorderPane {
 
     private void cargarVehiculos() {
         try {
+            // RN-10-07: antes de mostrar la flota se devuelven a DISPONIBLE las unidades
+            // cuyo bloqueo ya venció, de modo que la reserva sea realmente temporal.
+            servicio.liberarBloqueosVencidos();
+
             Vehiculo seleccionado = cmbVehiculo.getValue();
             List<Vehiculo> flota = vehiculoDAO.listarTodos();
             cmbVehiculo.getItems().setAll(flota);

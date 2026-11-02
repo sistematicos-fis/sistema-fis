@@ -218,6 +218,33 @@ public class VerificacionInventarioServicio {
     }
 
     // ------------------------------------------------------------------
+    // Bloqueo temporal de venta (RN-10-07)
+    // ------------------------------------------------------------------
+
+    /**
+     * Devuelve la unidad a DISPONIBLE cuando la venta no se concretó y el asesor
+     * libera la reserva antes de que venza.
+     */
+    public void liberarBloqueo(Long vehiculoId) throws SQLException {
+        Vehiculo vehiculo = obtenerVehiculo(vehiculoId);
+        if (!repositorio.liberarBloqueo(vehiculo.getId())) {
+            throw new ReglaNegocioException("No se pudo liberar: el vehículo está en estado "
+                    + vehiculo.getEstado() + " y solo se puede liberar una unidad RESERVADA.");
+        }
+    }
+
+    /**
+     * Libera las unidades cuyo bloqueo ya venció. Es lo que hace temporal al bloqueo
+     * de RN-10-07: sin esto la unidad quedaría reservada indefinidamente. La vista lo
+     * llama al abrir la pestaña y al refrescar la flota.
+     *
+     * @return cuántas unidades volvieron a DISPONIBLE.
+     */
+    public int liberarBloqueosVencidos() throws SQLException {
+        return repositorio.liberarBloqueosVencidos();
+    }
+
+    // ------------------------------------------------------------------
     // Consultas
     // ------------------------------------------------------------------
 

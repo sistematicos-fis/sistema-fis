@@ -319,6 +319,96 @@ public class VerificacionInventarioServicioTest {
     }
 
     // ------------------------------------------------------------------
+    // Bloqueo temporal de venta (RN-10-07)
+    // ------------------------------------------------------------------
+
+    @Test
+    public void testLiberarBloqueoDevuelveLaUnidadADisponible() throws Exception {
+        Vehiculo v = confirmarDisponibilidad();
+        assertEquals("RESERVADO", estadoActual(v.getId()));
+
+        servicio.liberarBloqueo(v.getId());
+
+        assertEquals("DISPONIBLE", estadoActual(v.getId()));
+    }
+
+    @Test
+    public void testTrasLiberarSePuedeVolverAVerificar() throws Exception {
+        Vehiculo v = confirmarDisponibilidad();
+        servicio.liberarBloqueo(v.getId());
+
+        VerificacionInventario segunda = servicio.verificarDisponibilidadParaVenta(v.getId(), "asesor");
+        assertEquals(ResultadoVerificacion.DISPONIBLE_CONFIRMADO, segunda.getResultado());
+    }
+
+    @Test
+    public void testLiberarUnaUnidadNoReservadaEsRechazado() throws Exception {
+        Vehiculo v = nuevoVehiculo("DISPONIBLE");
+        assertThrows(ReglaNegocioException.class, () -> servicio.liberarBloqueo(v.getId()));
+    }
+
+    @Test
+    public void testLiberarVehiculoInexistenteEsRechazado() {
+        assertThrows(ReglaNegocioException.class, () -> servicio.liberarBloqueo(999999L));
+    }
+
+    @Test
+    public void testBloqueoVencidoSeLiberaSolo() throws Exception {
+        Vehiculo v = confirmarDisponibilidad();
+        vencerBloqueo(v.getId());
+
+        int liberadas = servicio.liberarBloqueosVencidos();
+
+        assertTrue(liberadas >= 1, "debe liberar al menos la unidad con el bloqueo vencido");
+        assertEquals("DISPONIBLE", estadoActual(v.getId()),
+                "RN-10-07: el bloqueo es temporal, así que al vencer la unidad vuelve a DISPONIBLE");
+    }
+
+    @Test
+    public void testBloqueoVigenteNoSeLibera() throws Exception {
+        Vehiculo v = confirmarDisponibilidad();
+
+        servicio.liberarBloqueosVencidos();
+
+        assertEquals("RESERVADO", estadoActual(v.getId()),
+                "un bloqueo todavía vigente no debe liberarse");
+    }
+
+    @Test
+    public void testLiberarVencidosNoTocaUnidadesEnVerificacion() throws Exception {
+        Vehiculo v = nuevoVehiculo("DISPONIBLE");
+        servicio.registrarConteoFisico(v.getId(), EstadoVehiculo.MANTENIMIENTO, true, "bodega", null);
+        servicio.verificarDisponibilidadParaVenta(v.getId(), "asesor");
+        assertEquals("EN_VERIFICACION", estadoActual(v.getId()));
+
+        servicio.liberarBloqueosVencidos();
+
+        assertEquals("EN_VERIFICACION", estadoActual(v.getId()),
+                "una discrepancia sin resolver no se libera por vencimiento");
+    }
+
+    /** Deja una unidad RESERVADA por una verificación favorable. */
+    private Vehiculo confirmarDisponibilidad() throws SQLException {
+        Vehiculo v = nuevoVehiculo("DISPONIBLE");
+        servicio.registrarConteoFisico(v.getId(), EstadoVehiculo.DISPONIBLE, true, "bodega", null);
+        VerificacionInventario r = servicio.verificarDisponibilidadParaVenta(v.getId(), "asesor");
+        assertEquals(ResultadoVerificacion.DISPONIBLE_CONFIRMADO, r.getResultado());
+        return v;
+    }
+
+    /** Antedata el bloqueo de la unidad para simular que ya pasaron los 30 minutos. */
+    private void vencerBloqueo(Long vehiculoId) throws SQLException {
+        String sql = "UPDATE verificaciones_inventario "
+                   + "SET bloqueo_expira = DATEADD('MINUTE', -5, CURRENT_TIMESTAMP) "
+                   + "WHERE vehiculo_id = ? AND bloqueo_expira IS NOT NULL";
+        try (Connection conn = ConexionBD.obtenerConexion();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setLong(1, vehiculoId);
+            stmt.executeUpdate();
+        }
+    }
+
+    // ------------------------------------------------------------------
     // Apoyo
     // ------------------------------------------------------------------
 

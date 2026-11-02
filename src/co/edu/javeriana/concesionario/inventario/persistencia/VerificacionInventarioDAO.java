@@ -259,6 +259,40 @@ public class VerificacionInventarioDAO implements VerificacionInventarioReposito
     }
 
     // ------------------------------------------------------------------
+    // Bloqueo temporal de venta
+    // ------------------------------------------------------------------
+
+    @Override
+    public boolean liberarBloqueo(Long vehiculoId) throws SQLException {
+        String sql = "UPDATE vehiculos SET estado = 'DISPONIBLE' WHERE id = ? AND estado = 'RESERVADO'";
+        try (Connection conn = ConexionBD.obtenerConexion();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setLong(1, vehiculoId);
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    @Override
+    public int liberarBloqueosVencidos() throws SQLException {
+        // Se mira solo la verificación más reciente que fijó un bloqueo: si esa ya venció,
+        // la reserva perdió vigencia. La subconsulta se correlaciona por nombre de tabla
+        // porque H2 no admite alias en el UPDATE.
+        String sql = "UPDATE vehiculos SET estado = 'DISPONIBLE' "
+                   + "WHERE estado = 'RESERVADO' AND EXISTS ("
+                   + "  SELECT 1 FROM verificaciones_inventario v"
+                   + "  WHERE v.vehiculo_id = vehiculos.id"
+                   + "    AND v.bloqueo_expira IS NOT NULL"
+                   + "    AND v.bloqueo_expira < CURRENT_TIMESTAMP"
+                   + "    AND v.id = (SELECT MAX(u.id) FROM verificaciones_inventario u"
+                   + "                WHERE u.vehiculo_id = vehiculos.id AND u.bloqueo_expira IS NOT NULL)"
+                   + ")";
+        try (Connection conn = ConexionBD.obtenerConexion();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            return stmt.executeUpdate();
+        }
+    }
+
+    // ------------------------------------------------------------------
     // Consultas de apoyo
     // ------------------------------------------------------------------
 

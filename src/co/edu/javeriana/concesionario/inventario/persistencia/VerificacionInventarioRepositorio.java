@@ -53,6 +53,24 @@ public interface VerificacionInventarioRepositorio {
 
     List<VerificacionInventario> listarVerificaciones(Long vehiculoId) throws SQLException;
 
+    // --- Bloqueo temporal de venta ---
+
+    /**
+     * Devuelve a DISPONIBLE la unidad que está RESERVADA por una verificación.
+     *
+     * @return true si la liberó, false si no estaba reservada.
+     */
+    boolean liberarBloqueo(Long vehiculoId) throws SQLException;
+
+    /**
+     * Devuelve a DISPONIBLE las unidades RESERVADAS cuyo último bloqueo ya venció.
+     * Es lo que hace que el bloqueo del CU-10 sea temporal, como exige la
+     * postcondición del caso de uso en el SRS.
+     *
+     * @return cuántas unidades se liberaron.
+     */
+    int liberarBloqueosVencidos() throws SQLException;
+
     // --- Consultas de apoyo ---
 
     /** true si la unidad tiene un contrato de alquiler RESERVADO o EN_CURSO (flujo alterno 3A). */
