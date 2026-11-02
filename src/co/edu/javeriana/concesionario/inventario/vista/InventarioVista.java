@@ -46,6 +46,10 @@ public class InventarioVista extends TabPane {
     }
 
     public InventarioVista(InventarioServicio servicio) {
+        this(servicio, new VerificacionInventarioVista());
+    }
+
+    public InventarioVista(InventarioServicio servicio, VerificacionInventarioVista verificacionVista) {
         this.servicio = servicio;
         BorderPane panelVehiculos = new BorderPane();
         panelVehiculos.setPadding(new Insets(15));
@@ -91,6 +95,7 @@ public class InventarioVista extends TabPane {
         setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
         getTabs().add(new Tab("Vehículos", panelVehiculos));
         getTabs().add(new Tab("Bodegas", new BodegaVista(servicio)));
+        getTabs().add(new Tab("Verificación de existencias", verificacionVista));
     }
 
     private void registrarVehiculo() {
