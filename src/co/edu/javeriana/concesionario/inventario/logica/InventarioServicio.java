@@ -125,6 +125,7 @@ public class InventarioServicio {
         validarDatosBodega(bodega);
         validarCodigoUnico(bodega);
 
+        // RN-07-05: la capacidad no se puede reducir por debajo de la ocupación actual.
         int ocupacion = bodegaRepositorio.contarVehiculos(bodega.getId());
         if (bodega.getCapacidadVehiculos() < ocupacion) {
             throw new ReglaNegocioException("La capacidad no puede ser menor que los " + ocupacion
@@ -148,6 +149,7 @@ public class InventarioServicio {
         try {
             bodegaRepositorio.eliminar(id);
         } catch (SQLException e) {
+            // RN-07-06: una bodega con vehículos asociados no se elimina; se ofrece desactivarla.
             if (e.getErrorCode() == H2_ERROR_REGISTRO_CON_DEPENDENCIAS) {
                 throw new ReglaNegocioException(
                         "La bodega tiene vehículos asociados; márquela como inactiva en lugar de eliminarla.");
@@ -177,6 +179,7 @@ public class InventarioServicio {
         if (bodega == null) {
             throw new ReglaNegocioException("No se pudo guardar la bodega: no hay datos para procesar.");
         }
+        // RN-07-01: el código es obligatorio, de máximo 20 caracteres y se guarda en mayúsculas.
         if (estaVacio(bodega.getCodigo())) {
             throw new ReglaNegocioException("No se pudo guardar la bodega: el código es obligatorio.");
         }
@@ -184,6 +187,7 @@ public class InventarioServicio {
             throw new ReglaNegocioException("No se pudo guardar la bodega: el código no puede superar "
                     + LONGITUD_MAX_CODIGO + " caracteres.");
         }
+        // RN-07-02: el nombre es obligatorio y de máximo 80 caracteres.
         if (estaVacio(bodega.getNombre())) {
             throw new ReglaNegocioException("No se pudo guardar la bodega: el nombre es obligatorio.");
         }
@@ -191,6 +195,7 @@ public class InventarioServicio {
             throw new ReglaNegocioException("No se pudo guardar la bodega: el nombre no puede superar "
                     + LONGITUD_MAX_NOMBRE + " caracteres.");
         }
+        // RN-07-03: la ciudad es obligatoria y de máximo 50 caracteres.
         if (estaVacio(bodega.getCiudad())) {
             throw new ReglaNegocioException("No se pudo guardar la bodega: la ciudad es obligatoria.");
         }
@@ -198,6 +203,7 @@ public class InventarioServicio {
             throw new ReglaNegocioException("No se pudo guardar la bodega: la ciudad no puede superar "
                     + LONGITUD_MAX_CIUDAD + " caracteres.");
         }
+        // RN-07-04: la capacidad es un entero mayor o igual a 1.
         if (bodega.getCapacidadVehiculos() < CAPACIDAD_MINIMA) {
             throw new ReglaNegocioException("No se pudo guardar la bodega: la capacidad debe ser al menos "
                     + CAPACIDAD_MINIMA + " vehículo.");
