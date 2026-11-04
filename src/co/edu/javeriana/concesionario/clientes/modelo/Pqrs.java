@@ -13,6 +13,7 @@ public class Pqrs {
     private String estado;
     private LocalDateTime fechaRadicacion;
     private LocalDateTime fechaResolucion;
+    private String respuesta;
 
     public Pqrs() {
         this.estado = "ABIERTO";
@@ -48,6 +49,9 @@ public class Pqrs {
 
     public LocalDateTime getFechaResolucion() { return fechaResolucion; }
     public void setFechaResolucion(LocalDateTime fechaResolucion) { this.fechaResolucion = fechaResolucion; }
+
+    public String getRespuesta() { return respuesta; }
+    public void setRespuesta(String respuesta) { this.respuesta = respuesta; }
 
     public boolean estaResuelta() {
         return fechaResolucion != null;

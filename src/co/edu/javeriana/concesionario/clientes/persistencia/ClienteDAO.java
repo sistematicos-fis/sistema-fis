@@ -73,6 +73,20 @@ public class ClienteDAO {
         return Optional.empty();
     }
 
+    public Optional<Cliente> buscarPorId(Long id) throws SQLException {
+        String sql = "SELECT * FROM clientes WHERE id = ?";
+        try (Connection conn = ConexionBD.obtenerConexion();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setLong(1, id);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return Optional.of(mapearCliente(rs));
+                }
+            }
+        }
+        return Optional.empty();
+    }
+
     public void guardarEncuesta(EncuestaSatisfaccion enc) throws SQLException {
         String sql = "INSERT INTO encuestas_satisfaccion (cliente_id, puntuacion_atencion, puntuacion_producto, puntuacion_tiempos, comentarios) " +
                      "VALUES (?, ?, ?, ?, ?)";
