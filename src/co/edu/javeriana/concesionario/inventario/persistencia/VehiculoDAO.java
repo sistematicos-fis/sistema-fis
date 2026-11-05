@@ -63,6 +63,23 @@ public class VehiculoDAO {
         return lista;
     }
 
+    /**
+     * Toda la flota, sin filtrar por estado. La usa el CU-10, que necesita ver también
+     * las unidades reservadas, en verificación o fuera de venta.
+     */
+    public List<Vehiculo> listarTodos() throws SQLException {
+        List<Vehiculo> lista = new ArrayList<>();
+        String sql = "SELECT * FROM vehiculos ORDER BY marca, linea, modelo_anio DESC";
+        try (Connection conn = ConexionBD.obtenerConexion();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                lista.add(mapearResultSet(rs));
+            }
+        }
+        return lista;
+    }
+
     public Optional<Vehiculo> buscarPorId(Long id) throws SQLException {
         String sql = "SELECT * FROM vehiculos WHERE id = ?";
         try (Connection conn = ConexionBD.obtenerConexion();

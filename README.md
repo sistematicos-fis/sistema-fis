@@ -39,7 +39,7 @@ Hay un script SQL por área en `db/`:
 |---|---|
 | `00_init_general.sql` | usuarios |
 | `01_clientes.sql` | clientes, pqrs, encuestas y alertas de satisfacción |
-| `02_inventario.sql` | bodegas, vehículos y movimientos de inventario |
+| `02_inventario.sql` | bodegas, vehículos, movimientos de inventario, conteos físicos, verificaciones e incidencias |
 | `03_financiacion.sql` | entidades financieras |
 | `04_alquiler.sql` | puntos de entrega, tarifas y contratos de alquiler |
 | `07_legal.sql` | aseguradoras, pólizas, actas de traspaso y revisiones técnico-mecánicas |
@@ -51,7 +51,7 @@ Cada área tiene su propio README con el detalle de sus casos de uso.
 | Integrante | Área | Casos de uso | Caso no CRUD |
 |---|---|---|---|
 | Andrés Alquerque | Clientes y PQRS | CU-01 a CU-05 | CU-05 Calcular índice combinado de satisfacción del cliente |
-| Juan Pablo León | Inventario y bodega | CU-06 a CU-10 | CU-10 Realizar control y conciliación de inventario |
+| Juan Pablo León | Inventario y bodega | CU-06 a CU-10 | CU-10 Controlar existencias en tiempo real para ventas |
 | Jerónimo Martin | Financiación | CU-11 a CU-15 | CU-15 Simular, evaluar y formalizar crédito |
 | Samuel Borras | Alquiler | CU-16 a CU-20 | CU-20 Realizar alquiler de un vehículo |
 | Samuel Montaña | Documentación legal | CU-21 a CU-25 | CU-24 Validar y renovar SOAT, CU-25 Verificar vigencia de la revisión técnico-mecánica |
@@ -83,7 +83,7 @@ Pruebas:
 ./mvnw clean test
 ```
 
-Deben pasar las 121. Para correr solo una clase: `./mvnw test -Dtest=FinanciacionServicioTest`.
+Deben pasar las 148. Para correr solo una clase: `./mvnw test -Dtest=FinanciacionServicioTest`.
 
 Aplicación:
 
