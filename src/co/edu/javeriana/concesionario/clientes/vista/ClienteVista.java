@@ -1,6 +1,7 @@
 package co.edu.javeriana.concesionario.clientes.vista;
 
 import co.edu.javeriana.concesionario.clientes.logica.ClienteServicio;
+import co.edu.javeriana.concesionario.clientes.logica.IndiceSatisfaccionServicio;
 import co.edu.javeriana.concesionario.clientes.modelo.Cliente;
 import co.edu.javeriana.concesionario.comun.util.FormatoUtil;
 import co.edu.javeriana.concesionario.comun.util.MensajeUtil;
@@ -18,12 +19,13 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 
 /**
- * Pantalla JavaFX para la gestión de Clientes (CU-01 a CU-03).
+ * Pantalla JavaFX para la gestión de Clientes (CU-01 y CU-02).
  * Responsable: Andrés Alquerque
  */
 public class ClienteVista extends BorderPane {
 
     private final ClienteServicio servicio;
+    private final IndiceSatisfaccionServicio indiceServicio;
     private final TextField txtDoc;
     private final ComboBox<String> cmbTipoDoc;
     private final TextField txtNombres;
@@ -33,11 +35,11 @@ public class ClienteVista extends BorderPane {
     private final TextField txtIngresos;
     private final TableView<Object[]> tblClientes;
 
-    public ClienteVista() {
-        this.servicio = new ClienteServicio();
+    public ClienteVista(ClienteServicio servicio, IndiceSatisfaccionServicio indiceServicio) {
+        this.servicio = servicio;
+        this.indiceServicio = indiceServicio;
         setPadding(new Insets(15));
 
-        // Formulario Superior
         cmbTipoDoc = new ComboBox<>();
         cmbTipoDoc.getItems().addAll("CC", "NIT", "CE", "PASAPORTE");
         cmbTipoDoc.getSelectionModel().selectFirst();
@@ -51,7 +53,7 @@ public class ClienteVista extends BorderPane {
         Button btnGuardar = new Button("Guardar Cliente");
         btnGuardar.setOnAction(e -> guardarCliente());
 
-        setTop(ComponentesFX.crearSeccion("Registrar Cliente (CU-01 & CU-02)", ComponentesFX.crearFormulario(4,
+        setTop(ComponentesFX.crearSeccion("Registrar Cliente", ComponentesFX.crearFormulario(4,
                 new Label("Tipo Doc:"), cmbTipoDoc,
                 new Label("Documento / NIT:"), txtDoc,
                 new Label("Nombres:"), txtNombres,
@@ -61,17 +63,15 @@ public class ClienteVista extends BorderPane {
                 new Label("Ingresos Mensuales ($):"), txtIngresos,
                 btnGuardar)));
 
-        // Tabla Central
         tblClientes = ComponentesFX.crearTabla("ID", "Documento", "Nombre Completo", "Email", "Teléfono", "Ingresos", "Categoría");
         BorderPane.setMargin(tblClientes, new Insets(10, 0, 0, 0));
         setCenter(tblClientes);
 
-        // Barra Inferior
         Button btnRefrescar = new Button("Actualizar Lista");
         btnRefrescar.setOnAction(e -> cargarClientes());
 
-        Button btnIndices = new Button("Ver Índices de Satisfacción (CU-05)");
-        btnIndices.setOnAction(e -> IndiceSatisfaccionVista.abrir());
+        Button btnIndices = new Button("Ver Índices de Satisfacción");
+        btnIndices.setOnAction(e -> IndiceSatisfaccionVista.abrir(indiceServicio));
 
         setBottom(ComponentesFX.crearBarraBotones(Pos.CENTER_RIGHT, btnRefrescar, btnIndices));
 
