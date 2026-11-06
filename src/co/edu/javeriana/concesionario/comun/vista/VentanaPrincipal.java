@@ -1,7 +1,15 @@
 package co.edu.javeriana.concesionario.comun.vista;
 
 import co.edu.javeriana.concesionario.alquiler.vista.AlquilerVista;
+import co.edu.javeriana.concesionario.clientes.logica.ClienteServicio;
+import co.edu.javeriana.concesionario.clientes.logica.IndiceSatisfaccionServicio;
+import co.edu.javeriana.concesionario.clientes.logica.PqrsServicio;
+import co.edu.javeriana.concesionario.clientes.persistencia.ClienteDAO;
+import co.edu.javeriana.concesionario.clientes.persistencia.IndiceSatisfaccionDAO;
+import co.edu.javeriana.concesionario.clientes.persistencia.PqrsDAO;
 import co.edu.javeriana.concesionario.clientes.vista.ClienteVista;
+import co.edu.javeriana.concesionario.clientes.vista.ClientesModuloVista;
+import co.edu.javeriana.concesionario.clientes.vista.PqrsVista;
 import co.edu.javeriana.concesionario.comun.seguridad.modelo.Modulo;
 import co.edu.javeriana.concesionario.comun.seguridad.modelo.Usuario;
 import co.edu.javeriana.concesionario.comun.util.MensajeUtil;
@@ -73,7 +81,7 @@ public class VentanaPrincipal extends Stage {
     private Node crearVista(Modulo modulo) {
         switch (modulo) {
             case CLIENTES:
-                return new ClienteVista();
+                return crearVistaClientes();
             case INVENTARIO:
                 return new InventarioVista(new InventarioServicio(new VehiculoDAO(), new BodegaDAO()));
             case FINANCIACION:
@@ -85,6 +93,16 @@ public class VentanaPrincipal extends Stage {
             default:
                 throw new IllegalArgumentException("Módulo no soportado: " + modulo);
         }
+    }
+
+    private Node crearVistaClientes() {
+        ClienteDAO clienteDAO = new ClienteDAO();
+        PqrsDAO pqrsDAO = new PqrsDAO();
+        ClienteServicio clienteServicio = new ClienteServicio(clienteDAO, pqrsDAO);
+        ClienteVista clienteVista = new ClienteVista(clienteServicio,
+                new IndiceSatisfaccionServicio(new IndiceSatisfaccionDAO()));
+        PqrsVista pqrsVista = new PqrsVista(new PqrsServicio(pqrsDAO, clienteDAO), clienteServicio);
+        return new ClientesModuloVista(clienteVista, pqrsVista);
     }
 
     private MenuBar crearBarraMenu() {

@@ -6,7 +6,6 @@ import co.edu.javeriana.concesionario.clientes.modelo.AlertaSatisfaccion;
 import co.edu.javeriana.concesionario.clientes.modelo.CategoriaSatisfaccion;
 import co.edu.javeriana.concesionario.clientes.modelo.ResultadoIndiceSatisfaccion;
 
-import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -31,16 +30,14 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class IndiceSatisfaccionVista {
 
-    private static final AtomicBoolean TOOLKIT_INICIADO = new AtomicBoolean(false);
     private static final DateTimeFormatter FORMATO_FECHA = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
-    private final IndiceSatisfaccionServicio servicio = new IndiceSatisfaccionServicio();
+    private final IndiceSatisfaccionServicio servicio;
 
     private final DatePicker dpDesde = new DatePicker(
             LocalDate.now().minusDays(IndiceSatisfaccionServicio.DIAS_PERIODO_POR_DEFECTO));
@@ -55,25 +52,17 @@ public class IndiceSatisfaccionVista {
 
     private Stage stage;
 
-    public static void abrir() {
-        if (TOOLKIT_INICIADO.compareAndSet(false, true)) {
-            try {
-                Platform.startup(IndiceSatisfaccionVista::crearYMostrar);
-                Platform.setImplicitExit(false);
-                return;
-            } catch (IllegalStateException yaIniciado) {
-            }
-        }
-        Platform.runLater(IndiceSatisfaccionVista::crearYMostrar);
+    public IndiceSatisfaccionVista(IndiceSatisfaccionServicio servicio) {
+        this.servicio = servicio;
     }
 
-    private static void crearYMostrar() {
-        new IndiceSatisfaccionVista().mostrar();
+    public static void abrir(IndiceSatisfaccionServicio servicio) {
+        new IndiceSatisfaccionVista(servicio).mostrar();
     }
 
-    private void mostrar() {
+    public void mostrar() {
         stage = new Stage();
-        stage.setTitle("Índice combinado de satisfacción (CU-05)");
+        stage.setTitle("Índice combinado de satisfacción");
 
         BorderPane raiz = new BorderPane();
         raiz.setPadding(new Insets(15));
