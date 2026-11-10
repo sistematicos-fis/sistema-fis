@@ -13,7 +13,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -85,6 +87,61 @@ public class ClienteDAO {
             }
         }
         return Optional.empty();
+    }
+
+    public boolean actualizar(Cliente c) throws SQLException {
+        String sql = "UPDATE clientes SET documento = ?, tipo_documento = ?, nombres = ?, apellidos = ?, email = ?, " +
+                     "telefono = ?, ingresos_mensuales = ?, categoria_comercial = ? WHERE id = ?";
+        try (Connection conn = ConexionBD.obtenerConexion();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, c.getDocumento());
+            stmt.setString(2, c.getTipoDocumento());
+            stmt.setString(3, c.getNombres());
+            stmt.setString(4, c.getApellidos());
+            stmt.setString(5, c.getEmail());
+            stmt.setString(6, c.getTelefono());
+            stmt.setBigDecimal(7, c.getIngresosMensuales());
+            stmt.setString(8, c.getCategoriaComercial().name());
+            stmt.setLong(9, c.getId());
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    public boolean eliminar(Long id) throws SQLException {
+        String sql = "DELETE FROM clientes WHERE id = ?";
+        try (Connection conn = ConexionBD.obtenerConexion();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setLong(1, id);
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    public Map<String, Integer> contarRegistrosAsociados(Long id) throws SQLException {
+        String sql = "SELECT " +
+                     "(SELECT COUNT(*) FROM pqrs WHERE cliente_id = ?) AS pqrs, " +
+                     "(SELECT COUNT(*) FROM encuestas_satisfaccion WHERE cliente_id = ?) AS encuestas, " +
+                     "(SELECT COUNT(*) FROM alertas_satisfaccion WHERE cliente_id = ?) AS alertas, " +
+                     "(SELECT COUNT(*) FROM contratos_alquiler WHERE cliente_id = ?) AS alquileres, " +
+                     "(SELECT COUNT(*) FROM polizas_seguro WHERE cliente_id = ?) AS polizas, " +
+                     "(SELECT COUNT(*) FROM actas_traspaso WHERE comprador_id = ?) AS traspasos";
+        Map<String, Integer> conteo = new LinkedHashMap<>();
+        try (Connection conn = ConexionBD.obtenerConexion();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            for (int i = 1; i <= 6; i++) {
+                stmt.setLong(i, id);
+            }
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    conteo.put("PQRS", rs.getInt("pqrs"));
+                    conteo.put("encuesta(s) de satisfacción", rs.getInt("encuestas"));
+                    conteo.put("alerta(s) de satisfacción", rs.getInt("alertas"));
+                    conteo.put("contrato(s) de alquiler", rs.getInt("alquileres"));
+                    conteo.put("póliza(s) de seguro", rs.getInt("polizas"));
+                    conteo.put("acta(s) de traspaso", rs.getInt("traspasos"));
+                }
+            }
+        }
+        return conteo;
     }
 
     public void guardarEncuesta(EncuestaSatisfaccion enc) throws SQLException {
