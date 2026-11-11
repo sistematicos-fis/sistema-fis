@@ -3,7 +3,6 @@ package co.edu.javeriana.concesionario.clientes.persistencia;
 import co.edu.javeriana.concesionario.clientes.modelo.CategoriaComercial;
 import co.edu.javeriana.concesionario.clientes.modelo.CategoriaSatisfaccion;
 import co.edu.javeriana.concesionario.clientes.modelo.Cliente;
-import co.edu.javeriana.concesionario.clientes.modelo.EncuestaSatisfaccion;
 import co.edu.javeriana.concesionario.comun.bd.ConexionBD;
 
 import java.sql.Connection;
@@ -19,7 +18,7 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * DAO para gestión y consulta de Clientes y Encuestas en H2 con JDBC (CU-01, CU-04).
+ * DAO para gestión y consulta de Clientes en H2 con JDBC (CU-01).
  * Responsable: Andrés Alquerque
  */
 public class ClienteDAO {
@@ -142,45 +141,6 @@ public class ClienteDAO {
             }
         }
         return conteo;
-    }
-
-    public void guardarEncuesta(EncuestaSatisfaccion enc) throws SQLException {
-        String sql = "INSERT INTO encuestas_satisfaccion (cliente_id, puntuacion_atencion, puntuacion_producto, puntuacion_tiempos, comentarios) " +
-                     "VALUES (?, ?, ?, ?, ?)";
-        try (Connection conn = ConexionBD.obtenerConexion();
-             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            stmt.setLong(1, enc.getClienteId());
-            stmt.setInt(2, enc.getPuntuacionAtencion());
-            stmt.setInt(3, enc.getPuntuacionProducto());
-            stmt.setInt(4, enc.getPuntuacionTiempos());
-            stmt.setString(5, enc.getComentarios());
-            stmt.executeUpdate();
-            try (ResultSet rs = stmt.getGeneratedKeys()) {
-                if (rs.next()) {
-                    enc.setId(rs.getLong(1));
-                }
-            }
-        }
-    }
-
-    public List<EncuestaSatisfaccion> listarEncuestas() throws SQLException {
-        List<EncuestaSatisfaccion> lista = new ArrayList<>();
-        String sql = "SELECT * FROM encuestas_satisfaccion ORDER BY fecha DESC";
-        try (Connection conn = ConexionBD.obtenerConexion();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
-            while (rs.next()) {
-                EncuestaSatisfaccion e = new EncuestaSatisfaccion();
-                e.setId(rs.getLong("id"));
-                e.setClienteId(rs.getLong("cliente_id"));
-                e.setPuntuacionAtencion(rs.getInt("puntuacion_atencion"));
-                e.setPuntuacionProducto(rs.getInt("puntuacion_producto"));
-                e.setPuntuacionTiempos(rs.getInt("puntuacion_tiempos"));
-                e.setComentarios(rs.getString("comentarios"));
-                lista.add(e);
-            }
-        }
-        return lista;
     }
 
     static Cliente mapearCliente(ResultSet rs) throws SQLException {
