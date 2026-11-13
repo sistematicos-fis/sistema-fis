@@ -9,6 +9,7 @@ import co.edu.javeriana.concesionario.comun.vista.ComponentesFX;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -24,6 +25,8 @@ import javafx.scene.layout.BorderPane;
  */
 public class ClienteVista extends BorderPane {
 
+    private static final String INGRESOS_POR_DEFECTO = "5000000";
+
     private final ClienteServicio servicio;
     private final IndiceSatisfaccionServicio indiceServicio;
     private final TextField txtDoc;
@@ -33,7 +36,9 @@ public class ClienteVista extends BorderPane {
     private final TextField txtEmail;
     private final TextField txtTelefono;
     private final TextField txtIngresos;
+    private final Button btnGuardar;
     private final TableView<Object[]> tblClientes;
+    private Long idSeleccionado;
 
     public ClienteVista(ClienteServicio servicio, IndiceSatisfaccionServicio indiceServicio) {
         this.servicio = servicio;
@@ -41,19 +46,21 @@ public class ClienteVista extends BorderPane {
         setPadding(new Insets(15));
 
         cmbTipoDoc = new ComboBox<>();
-        cmbTipoDoc.getItems().addAll("CC", "NIT", "CE", "PASAPORTE");
+        cmbTipoDoc.getItems().addAll(ClienteServicio.TIPOS_DOCUMENTO);
         cmbTipoDoc.getSelectionModel().selectFirst();
         txtDoc = new TextField();
         txtNombres = new TextField();
         txtApellidos = new TextField();
         txtEmail = new TextField();
         txtTelefono = new TextField();
-        txtIngresos = new TextField("5000000");
+        txtIngresos = new TextField(INGRESOS_POR_DEFECTO);
 
-        Button btnGuardar = new Button("Guardar Cliente");
+        btnGuardar = new Button("Guardar Cliente");
         btnGuardar.setOnAction(e -> guardarCliente());
+        Button btnNuevo = new Button("Nuevo");
+        btnNuevo.setOnAction(e -> limpiarFormulario());
 
-        setTop(ComponentesFX.crearSeccion("Registrar Cliente", ComponentesFX.crearFormulario(4,
+        setTop(ComponentesFX.crearSeccion("Registrar o editar Cliente", ComponentesFX.crearFormulario(4,
                 new Label("Tipo Doc:"), cmbTipoDoc,
                 new Label("Documento / NIT:"), txtDoc,
                 new Label("Nombres:"), txtNombres,
@@ -61,11 +68,17 @@ public class ClienteVista extends BorderPane {
                 new Label("Correo Electrónico:"), txtEmail,
                 new Label("Teléfono:"), txtTelefono,
                 new Label("Ingresos Mensuales ($):"), txtIngresos,
-                btnGuardar)));
+                btnGuardar, btnNuevo)));
 
-        tblClientes = ComponentesFX.crearTabla("ID", "Documento", "Nombre Completo", "Email", "Teléfono", "Ingresos", "Categoría");
+        tblClientes = ComponentesFX.crearTabla("ID", "Documento", "Nombre Completo", "Email",
+                "Teléfono", "Ingresos", "Categoría");
+        tblClientes.getSelectionModel().selectedItemProperty()
+                .addListener((obs, anterior, fila) -> cargarSeleccion(fila));
         BorderPane.setMargin(tblClientes, new Insets(10, 0, 0, 0));
         setCenter(tblClientes);
+
+        Button btnEliminar = new Button("Eliminar");
+        btnEliminar.setOnAction(e -> eliminarCliente());
 
         Button btnRefrescar = new Button("Actualizar Lista");
         btnRefrescar.setOnAction(e -> cargarClientes());
@@ -73,33 +86,103 @@ public class ClienteVista extends BorderPane {
         Button btnIndices = new Button("Ver Índices de Satisfacción");
         btnIndices.setOnAction(e -> IndiceSatisfaccionVista.abrir(indiceServicio));
 
-        setBottom(ComponentesFX.crearBarraBotones(Pos.CENTER_RIGHT, btnRefrescar, btnIndices));
+        setBottom(ComponentesFX.crearBarraBotones(Pos.CENTER_RIGHT, btnEliminar, btnRefrescar, btnIndices));
 
         cargarClientes();
     }
 
     private void guardarCliente() {
         try {
-            String doc = txtDoc.getText().trim();
-            String tipo = cmbTipoDoc.getValue();
-            String nom = txtNombres.getText().trim();
-            String ape = txtApellidos.getText().trim();
-            String mail = txtEmail.getText().trim();
-            String tel = txtTelefono.getText().trim();
-            BigDecimal ing = new BigDecimal(txtIngresos.getText().trim());
-
-            servicio.registrarCliente(doc, tipo, nom, ape, mail, tel, ing);
-            MensajeUtil.mostrarInfo(this, "Cliente registrado exitosamente.", "Éxito");
+            BigDecimal ingresos = leerIngresos();
+            if (idSeleccionado == null) {
+                servicio.registrarCliente(txtDoc.getText(), cmbTipoDoc.getValue(), txtNombres.getText(),
+                        txtApellidos.getText(), txtEmail.getText(), txtTelefono.getText(), ingresos);
+                MensajeUtil.mostrarInfo(this, "Cliente registrado exitosamente.", "Éxito");
+            } else {
+                Cliente c = servicio.editarCliente(idSeleccionado, txtDoc.getText(), cmbTipoDoc.getValue(),
+                        txtNombres.getText(), txtApellidos.getText(), txtEmail.getText(), txtTelefono.getText(), ingresos);
+                MensajeUtil.mostrarInfo(this, "Cliente " + c.getNombreCompleto() + " actualizado. Categoría: "
+                        + c.getCategoriaComercial() + ".", "Cliente actualizado");
+            }
+            limpiarFormulario();
             cargarClientes();
-
-            txtDoc.clear();
-            txtNombres.clear();
-            txtApellidos.clear();
-            txtEmail.clear();
-            txtTelefono.clear();
+        } catch (IllegalArgumentException ex) {
+            MensajeUtil.mostrarAdvertencia(this, ex.getMessage(), "Datos inválidos");
         } catch (Exception ex) {
             MensajeUtil.mostrarError(this, "Error al guardar: " + ex.getMessage(), "Error");
         }
+    }
+
+    private void eliminarCliente() {
+        Object[] fila = tblClientes.getSelectionModel().getSelectedItem();
+        if (fila == null) {
+            MensajeUtil.mostrarAdvertencia(this, "Seleccione un cliente en la tabla.", "Seleccione un cliente");
+            return;
+        }
+        Long id = (Long) fila[0];
+        if (!MensajeUtil.confirmar(this, "¿Eliminar al cliente " + fila[2] + "?", "Confirmar eliminación")) {
+            return;
+        }
+        try {
+            servicio.eliminarCliente(id);
+            MensajeUtil.mostrarInfo(this, "Cliente " + fila[2] + " eliminado.", "Cliente eliminado");
+            limpiarFormulario();
+            cargarClientes();
+        } catch (IllegalArgumentException ex) {
+            MensajeUtil.mostrarAdvertencia(this, ex.getMessage(), "No se puede eliminar el cliente");
+        } catch (Exception ex) {
+            MensajeUtil.mostrarError(this, "No se pudo eliminar el cliente: " + ex.getMessage(), "Error");
+        }
+    }
+
+    private void cargarSeleccion(Object[] fila) {
+        if (fila == null) {
+            return;
+        }
+        try {
+            Optional<Cliente> cliente = servicio.buscarPorId((Long) fila[0]);
+            if (cliente.isEmpty()) {
+                return;
+            }
+            Cliente c = cliente.get();
+            idSeleccionado = c.getId();
+            cmbTipoDoc.setValue(c.getTipoDocumento());
+            txtDoc.setText(c.getDocumento());
+            txtNombres.setText(c.getNombres());
+            txtApellidos.setText(c.getApellidos());
+            txtEmail.setText(c.getEmail() != null ? c.getEmail() : "");
+            txtTelefono.setText(c.getTelefono() != null ? c.getTelefono() : "");
+            txtIngresos.setText(c.getIngresosMensuales() != null
+                    ? c.getIngresosMensuales().stripTrailingZeros().toPlainString() : "");
+            btnGuardar.setText("Guardar cambios");
+        } catch (Exception ex) {
+            MensajeUtil.mostrarError(this, "No se pudo cargar el cliente: " + ex.getMessage(), "Error");
+        }
+    }
+
+    private BigDecimal leerIngresos() {
+        String texto = txtIngresos.getText().trim();
+        if (texto.isEmpty()) {
+            return null;
+        }
+        try {
+            return new BigDecimal(texto);
+        } catch (NumberFormatException ex) {
+            throw new IllegalArgumentException("Los ingresos mensuales deben ser un número, sin puntos ni signo $.");
+        }
+    }
+
+    private void limpiarFormulario() {
+        idSeleccionado = null;
+        cmbTipoDoc.getSelectionModel().selectFirst();
+        txtDoc.clear();
+        txtNombres.clear();
+        txtApellidos.clear();
+        txtEmail.clear();
+        txtTelefono.clear();
+        txtIngresos.setText(INGRESOS_POR_DEFECTO);
+        btnGuardar.setText("Guardar Cliente");
+        tblClientes.getSelectionModel().clearSelection();
     }
 
     private void cargarClientes() {
@@ -117,7 +200,8 @@ public class ClienteVista extends BorderPane {
                     c.getCategoriaComercial()
                 });
             }
-        } catch (Exception ignored) {
+        } catch (Exception ex) {
+            MensajeUtil.mostrarError(this, "No se pudieron cargar los clientes: " + ex.getMessage(), "Error");
         }
     }
 }
