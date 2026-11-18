@@ -68,3 +68,38 @@ CREATE TABLE IF NOT EXISTS revisiones_tecnico_mecanicas (
     resultado VARCHAR(15) NOT NULL, -- APROBADA, RECHAZADA
     CONSTRAINT fk_rtm_veh FOREIGN KEY (vehiculo_id) REFERENCES vehiculos(id)
     );
+
+-- CU-21: matrícula (licencia de tránsito) e impuesto vehicular de cada vehículo
+CREATE TABLE IF NOT EXISTS matriculas (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    vehiculo_id BIGINT NOT NULL UNIQUE,
+    placa VARCHAR(10) NOT NULL UNIQUE,
+    numero_licencia_transito VARCHAR(20) NOT NULL UNIQUE,
+    organismo_transito VARCHAR(80) NOT NULL,
+    fecha_matricula DATE NOT NULL,
+    cilindraje_cc INT NOT NULL,
+    estado_registro VARCHAR(15) NOT NULL DEFAULT 'ACTIVA', -- EN_TRAMITE, ACTIVA, SUSPENDIDA, CANCELADA
+    ultimo_anio_impuesto_pagado INT,
+    valor_impuesto_anual DECIMAL(12,2),
+    CONSTRAINT fk_matricula_veh FOREIGN KEY (vehiculo_id) REFERENCES vehiculos(id)
+);
+
+-- Matrícula de los vehículos semilla del inventario (solo si todavía no tienen)
+INSERT INTO matriculas (vehiculo_id, placa, numero_licencia_transito, organismo_transito, fecha_matricula,
+                        cilindraje_cc, estado_registro, ultimo_anio_impuesto_pagado, valor_impuesto_anual)
+SELECT v.id, v.placa, 'LT-' || v.placa, 'Secretaría Distrital de Movilidad de Bogotá',
+       CASE v.vin WHEN '1FTEW1E48KFA19283' THEN DATE '2025-03-10' ELSE DATE '2024-02-15' END,
+       CASE v.vin WHEN '93HBL4820P1029381' THEN 1798 WHEN '3N1AB7AP8KL294819' THEN 2488 ELSE 890 END,
+       'ACTIVA',
+       CASE v.vin WHEN '3N1AB7AP8KL294819' THEN 2024 ELSE YEAR(CURRENT_DATE) END,
+       CASE v.vin WHEN '93HBL4820P1029381' THEN 1725000 WHEN '3N1AB7AP8KL294819' THEN 1920000 ELSE 870000 END
+FROM vehiculos v
+WHERE v.vin IN ('93HBL4820P1029381', '3N1AB7AP8KL294819', '1FTEW1E48KFA19283')
+  AND v.placa IS NOT NULL
+  AND NOT EXISTS (SELECT 1 FROM matriculas m WHERE m.vehiculo_id = v.id);
+
+-- CU-23: pólizas multirriesgo de la flota de alquiler
+-- El tomador de estas pólizas es el concesionario, no un cliente, y se registran a partir
+-- de la póliza física: el cliente y el código del simulador dejan de ser obligatorios.
+ALTER TABLE polizas_seguro ALTER COLUMN cliente_id SET NULL;
+ALTER TABLE polizas_seguro ALTER COLUMN codigo_aprobacion_simulada SET NULL;

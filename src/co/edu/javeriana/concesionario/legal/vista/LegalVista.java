@@ -2,9 +2,11 @@ package co.edu.javeriana.concesionario.legal.vista;
 
 import co.edu.javeriana.concesionario.legal.logica.AseguradoraServicio;
 import co.edu.javeriana.concesionario.legal.logica.MatriculaServicio;
+import co.edu.javeriana.concesionario.legal.logica.PolizaSeguroServicio;
 import co.edu.javeriana.concesionario.legal.logica.RevisionTecnicoMecanicaServicio;
 import co.edu.javeriana.concesionario.legal.persistencia.AseguradoraDAO;
 import co.edu.javeriana.concesionario.legal.persistencia.MatriculaDAO;
+import co.edu.javeriana.concesionario.legal.persistencia.PolizaSeguroDAO;
 import co.edu.javeriana.concesionario.legal.persistencia.RevisionTecnicoMecanicaDAO;
 
 import javafx.scene.Node;
@@ -28,9 +30,10 @@ public class LegalVista extends BorderPane {
                 new MatriculaVista(new MatriculaServicio(new MatriculaDAO()))));
         pestanas.getTabs().add(crearPestana("Aseguradoras (CU-22)",
                 new AseguradoraVista(new AseguradoraServicio(aseguradoraDAO))));
+        pestanas.getTabs().add(crearPestana("Pólizas de seguro (CU-23)",
+                new PolizaSeguroVista(new PolizaSeguroServicio(new PolizaSeguroDAO(), aseguradoraDAO))));
         pestanas.getTabs().add(crearPestana("Revisión Técnico-Mecánica (CU-25)",
                 new RevisionTecnicoMecanicaVista(new RevisionTecnicoMecanicaServicio(new RevisionTecnicoMecanicaDAO()))));
-        pestanas.getTabs().add(crearPestana("Pólizas", new PolizasVista()));
         setCenter(pestanas);
     }
 
