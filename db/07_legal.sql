@@ -98,8 +98,48 @@ WHERE v.vin IN ('93HBL4820P1029381', '3N1AB7AP8KL294819', '1FTEW1E48KFA19283')
   AND v.placa IS NOT NULL
   AND NOT EXISTS (SELECT 1 FROM matriculas m WHERE m.vehiculo_id = v.id);
 
+
 -- CU-23: pólizas multirriesgo de la flota de alquiler
 -- El tomador de estas pólizas es el concesionario, no un cliente, y se registran a partir
 -- de la póliza física: el cliente y el código del simulador dejan de ser obligatorios.
 ALTER TABLE polizas_seguro ALTER COLUMN cliente_id SET NULL;
 ALTER TABLE polizas_seguro ALTER COLUMN codigo_aprobacion_simulada SET NULL;
+
+
+-- CU-24: SOAT de los vehículos y estado documental
+CREATE TABLE IF NOT EXISTS soats (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    numero_poliza VARCHAR(40) NOT NULL UNIQUE,
+    vehiculo_id BIGINT NOT NULL,
+    aseguradora_id BIGINT NOT NULL,
+    fecha_inicio DATE NOT NULL,
+    fecha_vencimiento DATE NOT NULL,
+    valor_pagado DECIMAL(12,2) NOT NULL,
+    codigo_autorizacion VARCHAR(40),
+    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_soat_veh FOREIGN KEY (vehiculo_id) REFERENCES vehiculos(id),
+    CONSTRAINT fk_soat_aseg FOREIGN KEY (aseguradora_id) REFERENCES aseguradoras(id)
+);
+
+-- Estado documental de cada vehículo (paso 7 y flujo 6A del CU-24)
+CREATE TABLE IF NOT EXISTS documentacion_vehiculos (
+    vehiculo_id BIGINT PRIMARY KEY,
+    estado_documental VARCHAR(20) NOT NULL, -- AL_DIA, PENDIENTE
+    observacion VARCHAR(255),
+    fecha_actualizacion TIMESTAMP NOT NULL,
+    CONSTRAINT fk_docveh_veh FOREIGN KEY (vehiculo_id) REFERENCES vehiculos(id)
+);
+
+-- SOAT semilla para probar los flujos del CU-24 (fechas relativas al primer arranque):
+-- KLU382 vence en 10 días (renovación exitosa), LMP941 vence en 5 días (el simulador le reporta
+-- un siniestro pendiente, flujo 4A) y NKS817 venció hace 15 días (Allianz rechaza motos, flujo 6A).
+INSERT INTO soats (numero_poliza, vehiculo_id, aseguradora_id, fecha_inicio, fecha_vencimiento, valor_pagado, codigo_autorizacion)
+SELECT 'SOAT-SEMILLA-' || v.placa, v.id,
+       (SELECT id FROM aseguradoras WHERE codigo = 'SURA'),
+       DATEADD(DAY, 1, DATEADD(YEAR, -1, DATEADD(DAY, CASE v.placa WHEN 'KLU382' THEN 10 WHEN 'LMP941' THEN 5 ELSE -15 END, CURRENT_DATE))),
+       DATEADD(DAY, CASE v.placa WHEN 'KLU382' THEN 10 WHEN 'LMP941' THEN 5 ELSE -15 END, CURRENT_DATE),
+       CASE v.tipo WHEN 'MOTOCICLETA' THEN 790000 WHEN 'CAMIONETA' THEN 980000 ELSE 570000 END,
+       'AUT-SEMILLA'
+FROM vehiculos v
+WHERE v.placa IN ('KLU382', 'LMP941', 'NKS817')
+  AND NOT EXISTS (SELECT 1 FROM soats s WHERE s.numero_poliza = 'SOAT-SEMILLA-' || v.placa);
