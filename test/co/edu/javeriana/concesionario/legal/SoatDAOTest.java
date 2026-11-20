@@ -128,4 +128,50 @@ public class SoatDAOTest {
         assertThrows(ReglaNegocioException.class, () -> soats.registrarSoatExistente("QWE128", "SOAT-9207-A", sura.getId(),
                 LocalDate.now().minusYears(2), new BigDecimal("570000")));
     }
+
+    // ---------------------------------------------------------------- confiabilidad (RNF-08, RF-28)
+
+    private static void ejecutar(String sql) throws SQLException {
+        try (Statement stmt = ConexionBD.obtenerConexion().createStatement()) {
+            stmt.execute(sql);
+        }
+    }
+
+    private static Soat soatDePrueba(long vehiculoId, String numero) {
+        LocalDate hoy = LocalDate.now();
+        return new Soat(null, numero, vehiculoId, sura.getId(), hoy, hoy.plusYears(1).minusDays(1),
+                new BigDecimal("570000"), "AUT-PRUEBA");
+    }
+
+    @Test
+    public void testSiFallaElEstadoDocumentalNoQuedaGuardadoElSoat() throws Exception {
+        insertarVehiculo(9211L, "LEGALTEST00000011", null, "AUTOMOVIL", "DISPONIBLE");
+        matriculas.registrarMatricula(matricula(9211L, "QWE131", "LT-9211"));
+        Soat soat = soatDePrueba(9211L, "SOAT-9211-A");
+
+        // Sin la tabla del estado documental, el INSERT del SOAT funciona pero el MERGE del estado falla
+        ejecutar("ALTER TABLE documentacion_vehiculos RENAME TO documentacion_vehiculos_tmp");
+        try {
+            assertThrows(SQLException.class,
+                    () -> new SoatDAO().guardarConEstadoDocumental(soat, EstadoDocumental.AL_DIA, "prueba"));
+        } finally {
+            ejecutar("ALTER TABLE documentacion_vehiculos_tmp RENAME TO documentacion_vehiculos");
+        }
+
+        assertTrue(soats.listarSoats(9211L).isEmpty(), "El rollback deshace el INSERT del SOAT");
+        assertNull(soat.getId());
+    }
+
+    @Test
+    public void testUnErrorInesperadoTampocoDejaElSoatGuardado() throws Exception {
+        insertarVehiculo(9212L, "LEGALTEST00000012", null, "AUTOMOVIL", "DISPONIBLE");
+        matriculas.registrarMatricula(matricula(9212L, "QWE132", "LT-9212"));
+        Soat soat = soatDePrueba(9212L, "SOAT-9212-A");
+
+        // Un error de programación (estado nulo) después del INSERT del SOAT
+        assertThrows(NullPointerException.class,
+                () -> new SoatDAO().guardarConEstadoDocumental(soat, null, "prueba"));
+
+        assertTrue(soats.listarSoats(9212L).isEmpty(), "El SOAT no debe quedar guardado a medias");
+    }
 }

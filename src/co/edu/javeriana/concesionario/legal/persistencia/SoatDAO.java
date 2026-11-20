@@ -79,7 +79,8 @@ public class SoatDAO implements SoatRepositorio {
                 llenarEstado(stmtEstado, s.getVehiculoId(), estado, observacion);
                 stmtEstado.executeUpdate();
                 conn.commit();
-            } catch (SQLException e) {
+            } catch (SQLException | RuntimeException e) {
+                // Cualquier error deshace todo; si no, el setAutoCommit(true) del finally confirmaría lo ya hecho
                 conn.rollback();
                 s.setId(null);
                 throw e;

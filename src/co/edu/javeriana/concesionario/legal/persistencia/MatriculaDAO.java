@@ -43,7 +43,8 @@ public class MatriculaDAO implements MatriculaRepositorio {
                 stmtPlaca.setLong(2, m.getVehiculoId());
                 stmtPlaca.executeUpdate();
                 conn.commit();
-            } catch (SQLException e) {
+            } catch (SQLException | RuntimeException e) {
+                // Cualquier error deshace todo; si no, el setAutoCommit(true) del finally confirmaría lo ya hecho
                 conn.rollback();
                 m.setId(null);
                 throw e;

@@ -235,7 +235,7 @@ public class SoatServicio {
 
         // Paso 8: notificación
         return new ResultadoRenovacionSoat(ResultadoRenovacion.RENOVADO,
-                "SOAT renovado para el vehículo " + matricula.getPlaca() + " con " + aseguradora.getNombre() + ".\n"
+                "SOAT renovado para el vehículo " + matricula.getPlaca() + " con " + conPuntoFinal(aseguradora.getNombre()) + "\n"
                         + "Póliza N° " + nuevo.getNumeroPoliza() + " (autorización " + nuevo.getCodigoAutorizacion() + ").\n"
                         + "Vigencia: " + FormatoUtil.formatoFecha(inicio) + " a " + FormatoUtil.formatoFecha(vencimiento)
                         + ". Valor: " + FormatoUtil.formatoMoneda(valor) + ".\n"
@@ -260,6 +260,11 @@ public class SoatServicio {
         VehiculoLegal vehiculo = repositorio.buscarVehiculo(matricula.getVehiculoId())
                 .orElseThrow(() -> new ReglaNegocioException("No se encontró en el inventario el vehículo de la placa " + placaNormalizada + "."));
         return new VehiculoMatriculado(vehiculo, matricula);
+    }
+
+    /** Agrega el punto final, salvo que el texto ya termine en punto (por ejemplo, "Seguros Bolívar S.A."). */
+    static String conPuntoFinal(String texto) {
+        return texto.endsWith(".") ? texto : texto + ".";
     }
 
     /** El SOAT dura un año: si empieza el 10/03/2026 cubre hasta el 09/03/2027. */
