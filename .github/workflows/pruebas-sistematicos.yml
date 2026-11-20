@@ -1,0 +1,85 @@
+name: Compilación y ejecución de pruebas
+
+on:
+  # El pipeline se puede iniciar de forma manual (pestaña Actions > Run workflow)
+  workflow_dispatch:
+
+  # Se ejecuta automáticamente al hacer merge a main (un merge a main es un push a main)
+  push:
+    branches: [ main ]
+
+  # También se ejecuta en cada Pull Request, para revisar las pruebas antes del merge
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions: write-all
+
+    steps:
+      # Paso 1: Instalar Java (el proyecto compila con Java 21, ver maven.compiler.release en el pom.xml)
+      - name: Instalar Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      # Paso 2: Descargar el código desde el repositorio GIT
+      - name: Descargar del repositorio
+        uses: actions/checkout@v4
+
+      # Paso 3: Compilar y empaquetar
+      - name: Compilar y empaquetar
+        run: mvn --batch-mode -DskipTests package
+
+      # Paso 4: Ejecutar pruebas (JUnit 5 + H2 en memoria). JaCoCo mide la cobertura mientras corren.
+      - name: Ejecutar pruebas
+        run: mvn --batch-mode test
+
+      # Paso 5: Generar reporte de pruebas
+      - name: Reporte de pruebas
+        uses: mikepenz/action-junit-report@v5
+        if: success() || failure()
+        with:
+          report_paths: '**/target/surefire-reports/TEST-*.xml'
+          detailed_summary: true
+
+      # Paso 6: Generar reporte de cobertura de pruebas (JaCoCo)
+      - name: Reporte de cobertura de pruebas
+        if: success() || failure()
+        run: |
+          CSV=target/site/jacoco/jacoco.csv
+          if [ ! -f "$CSV" ]; then
+            echo "No se generó el reporte de cobertura: revise el paso de pruebas." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          {
+            echo "## Cobertura de pruebas (JaCoCo)"
+            echo ""
+            echo "| Paquete | Líneas | Ramas | Instrucciones |"
+            echo "|---|---|---|---|"
+          } >> "$GITHUB_STEP_SUMMARY"
+          # Suma por paquete las columnas del CSV de JaCoCo (faltantes y cubiertas) y calcula el porcentaje
+          awk -F, '
+            function pct(c, m) { return (c + m) == 0 ? "-" : sprintf("%.1f %%", 100 * c / (c + m)) }
+            NR > 1 {
+              p = $2; sub(/^co\.edu\.javeriana\.concesionario\.?/, "", p); if (p == "") p = "(raíz)"
+              im[p] += $4; ic[p] += $5; bm[p] += $6; bc[p] += $7; lm[p] += $8; lc[p] += $9
+              tim += $4; tic += $5; tbm += $6; tbc += $7; tlm += $8; tlc += $9
+            }
+            END {
+              for (k in lc) print "| " k " | " pct(lc[k], lm[k]) " | " pct(bc[k], bm[k]) " | " pct(ic[k], im[k]) " |" | "sort"
+              close("sort")
+              print "| **Total** | **" pct(tlc, tlm) "** | **" pct(tbc, tbm) "** | **" pct(tic, tim) "** |"
+            }' "$CSV" >> "$GITHUB_STEP_SUMMARY"
+
+      # Guarda los reportes (pruebas y cobertura) para descargarlos desde la ejecución
+      - name: Guardar reportes
+        if: success() || failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reportes-pruebas-y-cobertura
+          path: |
+            target/surefire-reports/
+            target/site/jacoco/
+          retention-days: 14
