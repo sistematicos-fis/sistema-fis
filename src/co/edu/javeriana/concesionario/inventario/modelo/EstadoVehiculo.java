@@ -17,7 +17,9 @@ public enum EstadoVehiculo {
     ALQUILADO,
     MANTENIMIENTO,
     /** Marcado por el CU-10 cuando el conteo físico no coincide con el sistema (flujo 4A). */
-    EN_VERIFICACION;
+    EN_VERIFICACION,
+    /** Retirado del catálogo (CU-06): conserva su historial, pero ya no se vende ni se alquila. */
+    DADO_DE_BAJA;
 
     /** Devuelve null si el texto no corresponde a ningún estado conocido. */
     public static EstadoVehiculo desdeTexto(String texto) {
@@ -29,6 +31,19 @@ public enum EstadoVehiculo {
         } catch (IllegalArgumentException ex) {
             return null;
         }
+    }
+
+    /**
+     * Estados que el CU-06 puede asignar a mano (RN-06-04). RESERVADO y EN_VERIFICACION los
+     * maneja el CU-10, ALQUILADO el módulo de alquiler y VENDIDO la venta.
+     */
+    public boolean esAsignableManualmente() {
+        return this == DISPONIBLE || this == MANTENIMIENTO || this == DADO_DE_BAJA;
+    }
+
+    /** Estados en los que el catálogo permite editar o retirar la unidad (RN-06-03). */
+    public boolean esEditableEnCatalogo() {
+        return this == DISPONIBLE || this == MANTENIMIENTO;
     }
 
     /** Único estado desde el cual una unidad puede pasar a venta (RN-10-04). */
