@@ -153,7 +153,7 @@ public class VerificacionInventarioDAO implements VerificacionInventarioReposito
                 }
             }
             conn.commit();
-        } catch (SQLException e) {
+        } catch (SQLException | RuntimeException e) {
             conn.rollback();
             throw e;
         } finally {
@@ -177,6 +177,9 @@ public class VerificacionInventarioDAO implements VerificacionInventarioReposito
 
         Connection conn = ConexionBD.obtenerConexion();
         boolean autoCommitOriginal = conn.getAutoCommit();
+        Long verificacionId = null;
+        Long incidenciaId = null;
+        IncidenciaInventario incidencia;
         try {
             conn.setAutoCommit(false);
 
@@ -195,12 +198,12 @@ public class VerificacionInventarioDAO implements VerificacionInventarioReposito
                 stmt.executeUpdate();
                 try (ResultSet rs = stmt.getGeneratedKeys()) {
                     if (rs.next()) {
-                        verificacion.setId(rs.getLong(1));
+                        verificacionId = rs.getLong(1);
                     }
                 }
             }
 
-            IncidenciaInventario incidencia = verificacion.getIncidencia();
+            incidencia = verificacion.getIncidencia();
             if (incidencia != null) {
                 try (PreparedStatement stmt = conn.prepareStatement(sqlIncidencia, Statement.RETURN_GENERATED_KEYS)) {
                     stmt.setLong(1, incidencia.getVehiculoId());
@@ -211,7 +214,7 @@ public class VerificacionInventarioDAO implements VerificacionInventarioReposito
                     stmt.executeUpdate();
                     try (ResultSet rs = stmt.getGeneratedKeys()) {
                         if (rs.next()) {
-                            incidencia.setId(rs.getLong(1));
+                            incidenciaId = rs.getLong(1);
                         }
                     }
                 }
@@ -226,11 +229,15 @@ public class VerificacionInventarioDAO implements VerificacionInventarioReposito
             }
 
             conn.commit();
-        } catch (SQLException e) {
+        } catch (SQLException | RuntimeException e) {
             conn.rollback();
             throw e;
         } finally {
             conn.setAutoCommit(autoCommitOriginal);
+        }
+        verificacion.setId(verificacionId);
+        if (incidencia != null) {
+            incidencia.setId(incidenciaId);
         }
         return verificacion;
     }
