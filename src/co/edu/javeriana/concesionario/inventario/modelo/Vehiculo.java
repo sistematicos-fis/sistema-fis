@@ -16,7 +16,7 @@ public class Vehiculo {
     private String linea;
     private String color;
     private BigDecimal precioVenta;
-    private String estado; // DISPONIBLE, RESERVADO, VENDIDO, ALQUILADO, MANTENIMIENTO
+    private String estado; // ver EstadoVehiculo
     private int kilometraje;
     private Long bodegaId;
 

@@ -94,6 +94,52 @@ public class VehiculoDAO {
         return Optional.empty();
     }
 
+    /**
+     * Actualiza los datos editables del catálogo. El VIN, el estado y la bodega no se tocan:
+     * el VIN identifica la unidad, el estado tiene su propia operación y la bodega cambia
+     * con un traslado.
+     */
+    public void actualizar(Vehiculo v) throws SQLException {
+        String sql = "UPDATE vehiculos SET placa = ?, tipo = ?, marca = ?, modelo_anio = ?, linea = ?, "
+                   + "color = ?, precio_venta = ?, kilometraje = ? WHERE id = ?";
+        try (Connection conn = ConexionBD.obtenerConexion();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, v.getPlaca());
+            stmt.setString(2, v.getTipo() != null ? v.getTipo().name() : CategoriaVehiculo.AUTOMOVIL.name());
+            stmt.setString(3, v.getMarca());
+            stmt.setInt(4, v.getModeloAnio());
+            stmt.setString(5, v.getLinea());
+            stmt.setString(6, v.getColor());
+            stmt.setBigDecimal(7, v.getPrecioVenta());
+            stmt.setInt(8, v.getKilometraje());
+            stmt.setLong(9, v.getId());
+            stmt.executeUpdate();
+        }
+    }
+
+    public void actualizarEstado(Long id, String estado) throws SQLException {
+        String sql = "UPDATE vehiculos SET estado = ? WHERE id = ?";
+        try (Connection conn = ConexionBD.obtenerConexion();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, estado);
+            stmt.setLong(2, id);
+            stmt.executeUpdate();
+        }
+    }
+
+    /**
+     * Borra la fila. Si el vehículo tiene historial (conteos, verificaciones, alquileres,
+     * documentos), H2 rechaza el borrado por llave foránea y la excepción sube al servicio.
+     */
+    public void eliminar(Long id) throws SQLException {
+        String sql = "DELETE FROM vehiculos WHERE id = ?";
+        try (Connection conn = ConexionBD.obtenerConexion();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setLong(1, id);
+            stmt.executeUpdate();
+        }
+    }
+
     private Vehiculo mapearResultSet(ResultSet rs) throws SQLException {
         Vehiculo v = new Vehiculo();
         v.setId(rs.getLong("id"));
