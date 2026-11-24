@@ -3,7 +3,7 @@
 Sistema de escritorio para la venta y el alquiler de vehículos y motocicletas. Proyecto de Fundamentos de Ingeniería de Software, Pontificia Universidad Javeriana.
 
 - Profesor: Jaime Andrés Pavlich Mariscal, Ph.D.
-- Grupo Sistemáticos: Andrés Alquerque, Juan Pablo León, Jerónimo Martin, Samuel Borras y Samuel Montaña
+- Grupo Sistemáticos: Andrés Alquerque, Juan Pablo León y Samuel Montaña
 
 Hecho en Java 21 con JavaFX para la interfaz, H2 como base de datos (por JDBC) y JUnit 5 para las pruebas.
 
@@ -52,8 +52,6 @@ Cada área tiene su propio README con el detalle de sus casos de uso.
 |---|---|---|---|
 | Andrés Alquerque | Clientes y PQRS | CU-01 a CU-05 | CU-05 Calcular índice combinado de satisfacción del cliente |
 | Juan Pablo León | Inventario y bodega | CU-06 a CU-10 | CU-10 Controlar existencias en tiempo real para ventas |
-| Jerónimo Martin | Financiación | CU-11 a CU-15 | CU-15 Simular, evaluar y formalizar crédito |
-| Samuel Borras | Alquiler | CU-16 a CU-20 | CU-20 Realizar alquiler de un vehículo |
 | Samuel Montaña | Documentación legal | CU-21 a CU-25 | CU-24 Validar y renovar SOAT, CU-25 Verificar vigencia de la revisión técnico-mecánica |
 
 ## Restricciones del curso
