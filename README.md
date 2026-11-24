@@ -83,7 +83,7 @@ Pruebas:
 ./mvnw clean test
 ```
 
-Deben pasar las 148. Para correr solo una clase: `./mvnw test -Dtest=FinanciacionServicioTest`.
+En la ejecución del PR #37 pasaron las 328 pruebas. Para correr solo una clase: `./mvnw test -Dtest=FinanciacionServicioTest`.
 
 Aplicación:
 

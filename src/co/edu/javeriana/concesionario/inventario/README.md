@@ -8,7 +8,7 @@
 | Caso de Uso | Nombre del Caso de Uso | Tipo | Clase Principal |
 |---|---|---|---|
 | **CU-06** | Registrar Vehículo o Motocicleta en Catálogo | CRUD | `persistencia.VehiculoDAO`<br>`logica.InventarioServicio` |
-| **CU-07** | Gestionar Bodegas y Patios de Almacenamiento | CRUD | `persistencia.VehiculoDAO`<br>`modelo.Bodega` |
+| **CU-07** | Gestionar Bodegas y Patios de Almacenamiento | CRUD | `logica.InventarioServicio`<br>`persistencia.BodegaRepositorio`<br>`persistencia.BodegaDAO` |
 | **CU-08** | Trasladar Vehículos entre Bodegas | Transaccional | `logica.InventarioServicio` |
 | **CU-09** | Consultar Disponibilidad y Filtro Multicriterio de Flota | Consulta Avanzada | `persistencia.VehiculoDAO`<br>`vista.InventarioVista` |
 | **CU-10** | Controlar existencias en tiempo real para ventas | **No Trivial** | `logica.VerificacionInventarioServicio` |
