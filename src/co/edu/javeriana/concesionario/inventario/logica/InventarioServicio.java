@@ -18,9 +18,9 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Servicio de lógica de negocio para Inventario (CU-06 a CU-10).
+ * Servicio del catálogo de vehículos y de la gestión de bodegas.
  * Incluye la gestión de bodegas y patios de almacenamiento (CU-07) y el cálculo
- * de depreciación anual comercial (CU-10 - No CRUD).
+ * de depreciación anual comercial. La verificación para venta (CU-10) corresponde a {@link VerificacionInventarioServicio}.
  *
  * Responsable: Juan Pablo León
  */
@@ -337,11 +337,11 @@ public class InventarioServicio {
     }
 
     // ------------------------------------------------------------------
-    // CU-10: valoración y depreciación (No CRUD)
+    // Valoración y depreciación
     // ------------------------------------------------------------------
 
     /**
-     * Calcula la depreciación estimada del vehículo según años de antigüedad (CU-10 - No CRUD).
+     * Calcula la depreciación estimada del vehículo según sus años de antigüedad.
      * Regla: 15% el primer año, 10% por año subsecuente, con valor de rescate mínimo del 30%.
      */
     public BigDecimal calcularValorDepreciado(Vehiculo v) {
