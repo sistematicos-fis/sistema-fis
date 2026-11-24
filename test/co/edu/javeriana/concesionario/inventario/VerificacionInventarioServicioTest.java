@@ -66,6 +66,27 @@ public class VerificacionInventarioServicioTest {
         return vehiculoDAO.buscarPorId(vehiculoId).orElseThrow().getEstado();
     }
 
+    @Test
+    void testRevierteVerificacionAnteErrorInesperado() throws SQLException {
+        Vehiculo vehiculo = nuevoVehiculo("DISPONIBLE");
+        VerificacionInventarioDAO dao = new VerificacionInventarioDAO();
+        VerificacionInventario verificacion = new VerificacionInventario(
+                vehiculo.getId(), ResultadoVerificacion.DISPONIBLE_CONFIRMADO,
+                null, EstadoVehiculo.DISPONIBLE, EstadoVehiculo.DISPONIBLE, "asesor") {
+            @Override
+            public IncidenciaInventario getIncidencia() {
+                throw new IllegalStateException("Fallo después de insertar la verificación");
+            }
+        };
+
+        assertThrows(IllegalStateException.class,
+                () -> dao.registrarResultado(verificacion, EstadoVehiculo.RESERVADO));
+
+        assertTrue(dao.listarVerificaciones(vehiculo.getId()).isEmpty());
+        assertNull(verificacion.getId());
+        assertEquals("DISPONIBLE", estadoActual(vehiculo.getId()));
+    }
+
     // ------------------------------------------------------------------
     // Flujo básico
     // ------------------------------------------------------------------
