@@ -106,6 +106,17 @@ public class ClienteDAO {
         }
     }
 
+    public boolean actualizarCategoria(Long id, CategoriaComercial categoria, boolean manual) throws SQLException {
+        String sql = "UPDATE clientes SET categoria_comercial = ?, categoria_manual = ? WHERE id = ?";
+        try (Connection conn = ConexionBD.obtenerConexion();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, categoria.name());
+            stmt.setBoolean(2, manual);
+            stmt.setLong(3, id);
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
     public boolean eliminar(Long id) throws SQLException {
         String sql = "DELETE FROM clientes WHERE id = ?";
         try (Connection conn = ConexionBD.obtenerConexion();
@@ -153,6 +164,7 @@ public class ClienteDAO {
         c.setEmail(rs.getString("email"));
         c.setTelefono(rs.getString("telefono"));
         c.setIngresosMensuales(rs.getBigDecimal("ingresos_mensuales"));
+        c.setCategoriaManual(rs.getBoolean("categoria_manual"));
         String cat = rs.getString("categoria_comercial");
         if (cat != null) {
             try {

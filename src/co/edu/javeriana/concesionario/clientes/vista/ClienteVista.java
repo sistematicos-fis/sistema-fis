@@ -2,6 +2,7 @@ package co.edu.javeriana.concesionario.clientes.vista;
 
 import co.edu.javeriana.concesionario.clientes.logica.ClienteServicio;
 import co.edu.javeriana.concesionario.clientes.logica.IndiceSatisfaccionServicio;
+import co.edu.javeriana.concesionario.clientes.modelo.CategoriaComercial;
 import co.edu.javeriana.concesionario.clientes.modelo.Cliente;
 import co.edu.javeriana.concesionario.comun.util.FormatoUtil;
 import co.edu.javeriana.concesionario.comun.util.MensajeUtil;
@@ -18,6 +19,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.VBox;
 
 /**
  * Pantalla JavaFX para la gestión de Clientes (CU-01 y CU-02).
@@ -36,6 +38,7 @@ public class ClienteVista extends BorderPane {
     private final TextField txtEmail;
     private final TextField txtTelefono;
     private final TextField txtIngresos;
+    private final ComboBox<CategoriaComercial> cmbCategoria;
     private final Button btnGuardar;
     private final TableView<Object[]> tblClientes;
     private Long idSeleccionado;
@@ -86,7 +89,18 @@ public class ClienteVista extends BorderPane {
         Button btnIndices = new Button("Ver Índices de Satisfacción");
         btnIndices.setOnAction(e -> IndiceSatisfaccionVista.abrir(indiceServicio));
 
-        setBottom(ComponentesFX.crearBarraBotones(Pos.CENTER_RIGHT, btnEliminar, btnRefrescar, btnIndices));
+        cmbCategoria = new ComboBox<>();
+        cmbCategoria.getItems().addAll(CategoriaComercial.values());
+        cmbCategoria.setPromptText("Categoría");
+        Button btnCambiarCategoria = new Button("Asignar categoría");
+        btnCambiarCategoria.setOnAction(e -> cambiarCategoria());
+        Button btnCategoriaAutomatica = new Button("Usar categoría automática");
+        btnCategoriaAutomatica.setOnAction(e -> restablecerCategoria());
+
+        setBottom(new VBox(
+                ComponentesFX.crearBarraBotones(Pos.CENTER_LEFT, new Label("Categoría comercial:"),
+                        cmbCategoria, btnCambiarCategoria, btnCategoriaAutomatica),
+                ComponentesFX.crearBarraBotones(Pos.CENTER_RIGHT, btnEliminar, btnRefrescar, btnIndices)));
 
         cargarClientes();
     }
@@ -102,7 +116,8 @@ public class ClienteVista extends BorderPane {
                 Cliente c = servicio.editarCliente(idSeleccionado, txtDoc.getText(), cmbTipoDoc.getValue(),
                         txtNombres.getText(), txtApellidos.getText(), txtEmail.getText(), txtTelefono.getText(), ingresos);
                 MensajeUtil.mostrarInfo(this, "Cliente " + c.getNombreCompleto() + " actualizado. Categoría: "
-                        + c.getCategoriaComercial() + ".", "Cliente actualizado");
+                        + c.getCategoriaComercial() + (c.isCategoriaManual() ? " (manual)." : "."),
+                        "Cliente actualizado");
             }
             limpiarFormulario();
             cargarClientes();
@@ -135,6 +150,51 @@ public class ClienteVista extends BorderPane {
         }
     }
 
+    private void cambiarCategoria() {
+        Object[] fila = filaSeleccionada();
+        if (fila == null) {
+            return;
+        }
+        try {
+            Cliente c = servicio.cambiarCategoria((Long) fila[0], cmbCategoria.getValue());
+            MensajeUtil.mostrarInfo(this, "La categoría de " + c.getNombreCompleto() + " ahora es "
+                    + c.getCategoriaComercial() + " (asignada manualmente).\n"
+                    + "Se mantendrá aunque cambien sus ingresos.", "Categoría asignada");
+            limpiarFormulario();
+            cargarClientes();
+        } catch (IllegalArgumentException ex) {
+            MensajeUtil.mostrarAdvertencia(this, ex.getMessage(), "No se puede asignar la categoría");
+        } catch (Exception ex) {
+            MensajeUtil.mostrarError(this, "No se pudo asignar la categoría: " + ex.getMessage(), "Error");
+        }
+    }
+
+    private void restablecerCategoria() {
+        Object[] fila = filaSeleccionada();
+        if (fila == null) {
+            return;
+        }
+        try {
+            Cliente c = servicio.restablecerCategoriaAutomatica((Long) fila[0]);
+            MensajeUtil.mostrarInfo(this, "La categoría de " + c.getNombreCompleto() + " volvió a "
+                    + c.getCategoriaComercial() + ", según sus ingresos.", "Categoría automática");
+            limpiarFormulario();
+            cargarClientes();
+        } catch (IllegalArgumentException ex) {
+            MensajeUtil.mostrarAdvertencia(this, ex.getMessage(), "No se puede restablecer la categoría");
+        } catch (Exception ex) {
+            MensajeUtil.mostrarError(this, "No se pudo restablecer la categoría: " + ex.getMessage(), "Error");
+        }
+    }
+
+    private Object[] filaSeleccionada() {
+        Object[] fila = tblClientes.getSelectionModel().getSelectedItem();
+        if (fila == null) {
+            MensajeUtil.mostrarAdvertencia(this, "Seleccione un cliente en la tabla.", "Seleccione un cliente");
+        }
+        return fila;
+    }
+
     private void cargarSeleccion(Object[] fila) {
         if (fila == null) {
             return;
@@ -154,6 +214,7 @@ public class ClienteVista extends BorderPane {
             txtTelefono.setText(c.getTelefono() != null ? c.getTelefono() : "");
             txtIngresos.setText(c.getIngresosMensuales() != null
                     ? c.getIngresosMensuales().stripTrailingZeros().toPlainString() : "");
+            cmbCategoria.setValue(c.getCategoriaComercial());
             btnGuardar.setText("Guardar cambios");
         } catch (Exception ex) {
             MensajeUtil.mostrarError(this, "No se pudo cargar el cliente: " + ex.getMessage(), "Error");
@@ -181,6 +242,7 @@ public class ClienteVista extends BorderPane {
         txtEmail.clear();
         txtTelefono.clear();
         txtIngresos.setText(INGRESOS_POR_DEFECTO);
+        cmbCategoria.getSelectionModel().clearSelection();
         btnGuardar.setText("Guardar Cliente");
         tblClientes.getSelectionModel().clearSelection();
     }
@@ -197,7 +259,7 @@ public class ClienteVista extends BorderPane {
                     c.getEmail(),
                     c.getTelefono(),
                     FormatoUtil.formatoMoneda(c.getIngresosMensuales()),
-                    c.getCategoriaComercial()
+                    c.getCategoriaComercial() + (c.isCategoriaManual() ? " (manual)" : " (automática)")
                 });
             }
         } catch (Exception ex) {

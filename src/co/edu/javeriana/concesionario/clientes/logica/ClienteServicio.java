@@ -51,8 +51,12 @@ public class ClienteServicio {
 
     public Cliente editarCliente(Long id, String documento, String tipoDoc, String nombres, String apellidos,
                                  String email, String telefono, BigDecimal ingresos) throws SQLException {
-        buscarExistente(id);
+        Cliente actual = buscarExistente(id);
         Cliente c = armarCliente(id, documento, tipoDoc, nombres, apellidos, email, telefono, ingresos);
+        if (actual.isCategoriaManual()) {
+            c.setCategoriaComercial(actual.getCategoriaComercial());
+            c.setCategoriaManual(true);
+        }
 
         Optional<Cliente> mismoDocumento = clienteDAO.buscarPorDocumento(c.getDocumento());
         if (mismoDocumento.isPresent() && !mismoDocumento.get().getId().equals(id)) {
@@ -60,6 +64,29 @@ public class ClienteServicio {
         }
 
         clienteDAO.actualizar(c);
+        return c;
+    }
+
+    public Cliente cambiarCategoria(Long id, CategoriaComercial categoria) throws SQLException {
+        Cliente c = buscarExistente(id);
+        if (categoria == null) {
+            throw new IllegalArgumentException("Debe seleccionar la categoría comercial.");
+        }
+        clienteDAO.actualizarCategoria(id, categoria, true);
+        c.setCategoriaComercial(categoria);
+        c.setCategoriaManual(true);
+        return c;
+    }
+
+    public Cliente restablecerCategoriaAutomatica(Long id) throws SQLException {
+        Cliente c = buscarExistente(id);
+        if (!c.isCategoriaManual()) {
+            throw new IllegalArgumentException("El cliente ya tiene la categoría automática según sus ingresos.");
+        }
+        CategoriaComercial automatica = clasificarCategoriaPorIngresos(c.getIngresosMensuales());
+        clienteDAO.actualizarCategoria(id, automatica, false);
+        c.setCategoriaComercial(automatica);
+        c.setCategoriaManual(false);
         return c;
     }
 

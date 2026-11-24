@@ -17,6 +17,7 @@ public class Cliente {
     private String telefono;
     private BigDecimal ingresosMensuales;
     private CategoriaComercial categoriaComercial;
+    private boolean categoriaManual;
     private Long asesorId;
     private BigDecimal indiceSatisfaccion;
     private CategoriaSatisfaccion nivelSatisfaccion;
@@ -68,6 +69,9 @@ public class Cliente {
 
     public CategoriaComercial getCategoriaComercial() { return categoriaComercial; }
     public void setCategoriaComercial(CategoriaComercial categoriaComercial) { this.categoriaComercial = categoriaComercial; }
+
+    public boolean isCategoriaManual() { return categoriaManual; }
+    public void setCategoriaManual(boolean categoriaManual) { this.categoriaManual = categoriaManual; }
 
     public Long getAsesorId() { return asesorId; }
     public void setAsesorId(Long asesorId) { this.asesorId = asesorId; }
