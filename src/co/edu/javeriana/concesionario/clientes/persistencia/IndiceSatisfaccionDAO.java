@@ -152,7 +152,7 @@ public class IndiceSatisfaccionDAO {
                     }
                 }
                 conn.commit();
-            } catch (SQLException e) {
+            } catch (SQLException | RuntimeException e) {
                 conn.rollback();
                 throw e;
             } finally {
